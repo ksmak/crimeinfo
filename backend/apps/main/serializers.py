@@ -7,7 +7,8 @@ from .models import (
     Item,
     Info,
     Test,
-    UserRole
+    UserRole,
+    Comment,
 )
 from auths.serializers import MyUserSerializer
 
@@ -77,3 +78,12 @@ class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = ('role', )
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """
+    Comment serializer
+    """
+    class Meta:
+        model = Comment
+        fields = '__all__'

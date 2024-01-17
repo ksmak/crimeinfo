@@ -1,21 +1,20 @@
 import { Avatar, IconButton } from "@material-tailwind/react";
-import { Comment, Profile } from "../../../types/types";
-import { useContext, useEffect, useState } from "react";
-import { supabase } from "../../../api/supabase";
+import { IComment, IProfile } from "../../../types/types";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 import { AiFillDelete } from "react-icons/ai";
-import { AuthContext } from "../../../App";
+import { useAuth } from "../../../lib/auth";
 
 interface CommentCardProps {
-    comment: Comment,
+    comment: IComment,
     handleRemoveComment: (id: number | null | undefined) => void
 }
 
 const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
-    const auth = useContext(AuthContext);
+    const auth = useAuth();
     const { t, i18n } = useTranslation();
-    const [profile, setProfile] = useState<Profile>();
+    const [profile, setProfile] = useState<IProfile>();
 
     const getUserProfile = async (user_id: string) => {
         const { data } = await supabase

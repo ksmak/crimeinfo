@@ -14,14 +14,16 @@ from .serializers import (
     ItemSerializer,
     InfoSerializer,
     TestSerializer,
-    UserRoleSerializer
+    UserRoleSerializer,
+    CommentSerializer,
 )
 from .permissions import (
     ItemEditor,
     InfoEditor,
     TestEditor,
+    SelfUser,
 )
-from .models import UserRole
+from .models import UserRole, Comment
 
 
 class CategoryViewSet(ReadOnlyModelViewSet):
@@ -120,8 +122,17 @@ class UserRoleView(ListAPIView):
     User role view
     """
     serializer_class = UserRoleSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         user = self.request.user
         return UserRole.objects.filter(user=user)
+
+
+class CommentViewSet(ModelViewSet):
+    """
+    Comment view
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = (SelfUser, )

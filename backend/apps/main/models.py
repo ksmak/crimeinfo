@@ -385,3 +385,36 @@ class UserRole(models.Model):
     class Meta:
         verbose_name = 'роль пользователя'
         verbose_name_plural = 'роли пользователей'
+
+
+class Comment(models.Model):
+    """
+    Comment model
+    """
+    user = models.ForeignKey(
+        verbose_name='пользователь',
+        to=get_user_model(),
+        on_delete=models.RESTRICT
+    )
+    text = models.CharField(
+        verbose_name='текст сообщения',
+        max_length=2000
+    )
+    item = models.ForeignKey(
+        verbose_name='объявление',
+        to=Item,
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True
+    )
+    about = models.BooleanField(
+        verbose_name='обратная связь',
+        default=False
+    )
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        verbose_name = 'комментарий пользователя'
+        verbose_name_plural = 'комментарии пользователей'
