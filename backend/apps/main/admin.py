@@ -4,14 +4,16 @@ from .models import (
     Category,
     Region,
     District,
-    Color,
     Item,
-    Info
+    Info,
+    Test,
+    UserRole
 )
 
 admin.site.register(Category)
 admin.site.register(Region)
 admin.site.register(District)
-admin.site.register(Color)
 admin.site.register(Item)
 admin.site.register(Info)
+admin.site.register(Test)
+admin.site.register(UserRole)

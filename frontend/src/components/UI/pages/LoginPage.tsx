@@ -1,10 +1,9 @@
-import { Button, Card, CardBody, CardFooter, Input, Spinner, Tab, TabPanel, Tabs, TabsBody, TabsHeader, Typography } from "@material-tailwind/react";
+import { Button, Card, CardBody, Input, Spinner, Tab, TabPanel, Tabs, TabsBody, TabsHeader } from "@material-tailwind/react";
 import LanguagePanel from "../panels/LanguagePanel";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { supabase } from "../../../api/supabase";
-import { Provider } from "@supabase/supabase-js";
+import axios from "axios";
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -26,39 +25,40 @@ const LoginPage = () => {
             return;
         }
         setLoading(true);
-        const { error } = await supabase.auth.signUp({
+        axios.post(`${process.env.REACT_APP_API_HOST}/auth/register/`, {
             email: email,
             password: password,
-        });
-        setLoading(false);
-        if (error) {
-            setErrorRegister(t('errorSignUp'));
-            return;
-        }
-        navigate('/register_success');
+            password2: confirmPassword,
+        })
+            .then(res => {
+                setLoading(false);
+                navigate('/register_success');
+            })
+            .catch(err => {
+                setLoading(false);
+                console.log(err);
+                setErrorRegister(t('errorSignUp'));
+            })
     }
 
     const handleEmailLogin = async () => {
         setErrorLogin('');
         setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({
+        axios.post(`${process.env.REACT_APP_API_HOST}/auth/login/`, {
             email: email,
-            password: password
+            password: password,
         })
-        setLoading(false);
-        if (error) {
-            setErrorLogin(t('errorLogin'));
-        } else {
-            navigate(-1);
-        }
-    }
-
-    const handleProviderLogin = async (provider: Provider) => {
-        setLoading(true);
-        await supabase.auth.signInWithOAuth({
-            provider: provider,
-        })
-        setLoading(false);
+            .then(res => {
+                setLoading(false);
+                localStorage.setItem('username', email);
+                localStorage.setItem('access_token', res.data.access);
+                localStorage.setItem('refresh_token', res.data.refresh);
+                navigate(-1);
+            })
+            .catch(err => {
+                setLoading(false);
+                setErrorLogin(t('errorLogin'));
+            })
     }
 
     return (
@@ -168,23 +168,6 @@ const LoginPage = () => {
                             </TabPanel>
                         </TabsBody>
                     </Tabs>
-                    <CardFooter className="p-0 mt-4">
-                        <div className="flex flex-col w-full">
-                            <Typography className="mb-5 self-center">
-                                {t('OR')}
-                            </Typography>
-                            <Button
-                                size="lg"
-                                variant="outlined"
-                                color="blue-gray"
-                                className="flex justify-center items-center gap-3 mb-4 hover:bg-blue-400 hover:border-white hover:text-white"
-                                onClick={() => handleProviderLogin('google')}
-                            >
-                                <img src="google.png" alt="google" className="h-6 w-6" />
-                                {t('continue_google')}
-                            </Button>
-                        </div>
-                    </CardFooter>
                 </CardBody>
             </Card>
             {loading

@@ -11,6 +11,7 @@ class MyUserAdmin(UserAdmin):
         'patronymic',
         'phone',
         'avatar',
+        'activation_code',
         'is_active',
         'is_staff',
         'is_superuser',
@@ -42,6 +43,7 @@ class MyUserAdmin(UserAdmin):
                 'patronymic',
                 'phone',
                 'avatar',
+                'activation_code',
             )
         }),
         ('Разрешения', {
@@ -70,9 +72,9 @@ class MyUserAdmin(UserAdmin):
                 'name',
                 'surname',
                 'patronymic',
-                'title',
                 'phone',
                 'avatar',
+                'activation_code'
             )
         }),
         ('Разрешения', {
@@ -90,7 +92,7 @@ class MyUserAdmin(UserAdmin):
 
     ordering = ('email', )
 
-    readonly_fields = ('is_superuser', )
+    readonly_fields = ('is_superuser', 'activation_code')
 
 
 admin.site.register(get_user_model(), MyUserAdmin)

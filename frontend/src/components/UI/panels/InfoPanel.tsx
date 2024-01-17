@@ -1,9 +1,9 @@
 import { Collapse } from "@material-tailwind/react";
-import { Info } from "../../../types/types";
+import { IInfo } from "../../../types/types";
 import InfoCard from "../cards/InfoCard";
 
 interface InfoPanelProps {
-    infoItems: Info[] | [],
+    infoItems: IInfo[] | [],
     openInfo: boolean
 }
 const InfoPanel = ({ infoItems, openInfo }: InfoPanelProps) => {

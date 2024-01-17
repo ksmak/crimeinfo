@@ -1,16 +1,18 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Badge, Button, Card, CardBody, CardFooter, Collapse, Input } from "@material-tailwind/react";
 import { BsFilter, BsSearch } from "react-icons/bs";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../../../api/supabase";
-import { Detail, Field, Item } from "../../../types/types";
+import { IDetail, Field, IItem } from "../../../types/types";
 import ItemsPanel from "../panels/ItemsPanel";
 import NavigatorPanel from "../panels/NavigatorPanel";
 import Loading from "../elements/Loading";
 import InputField from "../elements/InputField";
 import SelectField from "../elements/SelectField";
-import { AuthContext, MetaDataContext } from "../../../App";
+import { useAuth } from "../../../lib/auth";
+import { useMeta } from "../../../lib/meta";
+import instance from "../../../api/instance";
 
 type FilterType = {
     searchText?: string | undefined,
@@ -20,15 +22,15 @@ type FilterType = {
     punkt?: string | undefined,
     date_of_action_start?: string | undefined,
     date_of_action_end?: string | undefined,
-    details?: Detail[] | undefined,
+    details?: IDetail[] | undefined,
 }
 
 const SearchPage = () => {
     const [searchParams] = useSearchParams();
-    const { session } = useContext(AuthContext);
-    const { categories, regions, districts } = useContext(MetaDataContext);
+    const { user, isAuthenticated } = useAuth();
+    const { categories, regions, districts } = useMeta();
     const { t, i18n } = useTranslation();
-    const [findItems, setFindItems] = useState<Item[]>([]);
+    const [findItems, setFindItems] = useState<IItem[]>([]);
     const [filter, setFilter] = useState<FilterType>({
         searchText: searchParams.get('text'),
         category: searchParams.get('category')
@@ -55,80 +57,58 @@ const SearchPage = () => {
 
         setOpenFilter(false);
 
-        let query = supabase
-            .from('item')
-            .select()
-            .or(`is_active.eq.true${session?.user.id ? ', user_id.eq.' + session.user.id : ''}`)
+        let query: string[] = [];
 
-        if (filter.searchText) {
-            query = query.or(`title_kk.ilike.%${filter.searchText}%, title_ru.ilike.%${filter.searchText}%, title_en.ilike.%${filter.searchText}%, text_kk.ilike.%${filter.searchText}%, text_ru.ilike.%${filter.searchText}%, text_en.ilike.%${filter.searchText}%`);
-        }
-        if (filter.category) {
-            query = query.eq('category_id', filter.category);
-        }
-        if (filter.region) {
-            query = query.eq('region_id', filter.region);
-        }
-        if (filter.district) {
-            query = query.eq('district_id', filter.district);
-        }
-        if (filter.punkt) {
-            query = query.ilike('punkt', `%${filter.punkt}%`);
-        }
-        if (filter.date_of_action_start) {
-            query = query.gte('date_of_action', filter.date_of_action_start);
-        }
-        if (filter.date_of_action_end) {
-            query = query.lte('date_of_action', filter.date_of_action_end);
-        }
-        query = query.order('date_of_action', { ascending: false })
-        const { data, error } = await query;
-        if (error) {
-            setErrorMessage(error.message);
-            setShowError(true);
-            setLoading(false);
-            return;
-        }
-        if (data) {
-            const prunedData = data as Item[];
-            if (filter.details && filter.details.length) {
-                const filterDetails = filter.details;
-                let filteredData: Item[] = [];
-                prunedData.forEach((item) => {
-                    let flag = false;
-                    for (let i = 0; i < filterDetails.length; i++) {
-                        flag = false;
-                        if (item.data?.details && item.data.details.length) {
-                            const itemDetails = item.data.details;
-                            for (let j = 0; j < itemDetails.length; j++) {
-                                if (itemDetails[j].field_name === filterDetails[i].field_name) {
-                                    if (itemDetails[j].value.toLowerCase().includes(filterDetails[i].value.toLowerCase())) {
-                                        flag = true;
-                                        break;
+        Object.keys(filter).forEach(item => query.push(`${item}=${filter[item as keyof typeof filter]}`))
+
+        const url = process.env.REACT_APP_API_HOST + '/api/items?' + query.join('&')
+        instance.get(url)
+            .then(res => {
+                const prunedData = res.data as IItem[];
+                if (filter.details && filter.details.length) {
+                    const filterDetails = filter.details;
+                    let filteredData: IItem[] = [];
+                    prunedData.forEach((item) => {
+                        let flag = false;
+                        for (let i = 0; i < filterDetails.length; i++) {
+                            flag = false;
+                            if (item.data?.details && item.data.details.length) {
+                                const itemDetails = item.data.details;
+                                for (let j = 0; j < itemDetails.length; j++) {
+                                    if (itemDetails[j].field_name === filterDetails[i].field_name) {
+                                        if (itemDetails[j].value.toLowerCase().includes(filterDetails[i].value.toLowerCase())) {
+                                            flag = true;
+                                            break;
+                                        }
                                     }
                                 }
+                            } else {
+                                flag = true;
                             }
-                        } else {
-                            flag = true;
+                            if (flag === false) {
+                                break;
+                            }
                         }
-                        if (flag === false) {
-                            break;
+                        if (flag) {
+                            filteredData.push(item);
                         }
+                    });
+                    if (filteredData) {
+                        setFindItems(filteredData as IItem[]);
+                    } else {
+                        setFindItems([]);
                     }
-                    if (flag) {
-                        filteredData.push(item);
-                    }
-                });
-                if (filteredData) {
-                    setFindItems(filteredData as Item[]);
                 } else {
-                    setFindItems([]);
+                    setFindItems(prunedData);
                 }
-            } else {
-                setFindItems(prunedData);
-            }
-        }
-        setLoading(false);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.log(err);
+                setErrorMessage(err.message);
+                setShowError(true);
+                setLoading(false);
+            })
     }
 
     const handleClean = () => {
@@ -257,7 +237,7 @@ const SearchPage = () => {
                                                 }
                                                 setFilter({ ...filter, details: details });
                                             } else {
-                                                let newDetail: Detail = {
+                                                let newDetail: IDetail = {
                                                     field_name: field.field_name,
                                                     value: val
                                                 }

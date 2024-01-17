@@ -3,8 +3,7 @@ import { Collapse, IconButton } from "@material-tailwind/react";
 import { supabase } from "../../../api/supabase";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Site } from "../../../types/types";
-import { AuthContext, MetaDataContext } from '../../../App';
+import { ISite } from "../../../types/types";
 import Logo from "../elements/Logo";
 import LanguagePanel from "./LanguagePanel";
 import WeatherPanel from "./WeatherPanel";
@@ -12,12 +11,14 @@ import MyMenuItem from "../elements/MyMenuItem";
 import MobileMenuItem from "../elements/MobileMenuItem";
 import SingleMenuItem from "../elements/SingleMenuItem";
 import ModileSingleItem from "../elements/MobileSingleItem";
+import { useAuth } from "../../../lib/auth";
+import { useMeta } from "../../../lib/meta";
 
 const NavigatorPanel = () => {
     const { t } = useTranslation();
-    const auth = useContext(AuthContext);
+    const { user, logout } = useAuth();
     const [openNav, setOpenNav] = useState(false);
-    const { categories, infoItems, testItems, weather } = useContext(MetaDataContext);
+    const { categories, infoItems, testItems, weather } = useMeta();
     const [openCategoryMenu, setOpenCategoryMenu] = useState(false);
     const [openInfoMenu, setOpenInfoMenu] = useState(false);
     const [openTestMenu, setOpenTestMenu] = useState(false);
@@ -34,7 +35,7 @@ const NavigatorPanel = () => {
         );
     }, []);
 
-    const siteItems: Site[] = [
+    const siteItems: ISite[] = [
         {
             href: "https://qamqor.gov.kz/missing",
             title_kk: "Хабар-ошарсыз жоғалғандарды іздестіру - Құқықтық статистика және арнайы есепке алу органдарының порталы ",
@@ -60,7 +61,7 @@ const NavigatorPanel = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        auth.logout();
+        logout();
     }
 
     return (
@@ -94,9 +95,9 @@ const NavigatorPanel = () => {
                                 <li>
                                     <SingleMenuItem link="/about" title={t('feedbackMenu')} />
                                 </li>
-                                {auth.session?.user
+                                {user
                                     ? <li className="text-end text-primary-500 text-sm px-5">
-                                        <div className="">{auth.session.user.email}</div>
+                                        <div className="">{user.email}</div>
                                         <div>
                                             <Link to="/profile" className="underline cursor-pointer mr-1 lowercase">{t('profile')}</Link>
                                             <span className="underline cursor-pointer lowercase" onClick={handleLogout}>{t('exit')}</span>
@@ -172,9 +173,9 @@ const NavigatorPanel = () => {
                             <MobileMenuItem open={openInfoMenuMobile} setOpen={setOpenInfoMenuMobile} items={infoItems} title={t('infoMenu')} />
                         </li>
                         <ModileSingleItem link="/about" title={t('feedbackMenu')} />
-                        {auth.session?.user
+                        {user
                             ? <div className="text-primary-500 text-sm p-1">
-                                <div className="">{auth.session.user.email}</div>
+                                <div className="">{user.email}</div>
                                 <div>
                                     <Link to="/profile" className="underline cursor-pointer mr-1 lowercase">{t('profile')}</Link>
                                     <span className="underline cursor-pointer lowercase" onClick={handleLogout}>{t('exit')}</span>

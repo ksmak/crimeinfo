@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState } from "react";
-import { WeatherType } from "../../../types/types";
-import { MetaDataContext } from "../../../App";
+import { IWeather } from "../../../types/types";
+import { useMeta } from "../../../lib/meta";
 
 type WeatherPanelProps = {
-    data: WeatherType | undefined,
+    data: IWeather | undefined,
 }
 
 export default function WeatherPanel({ data }: WeatherPanelProps) {
-    const { setupWeather } = useContext(MetaDataContext);
+    const { getWeather } = useMeta();
     const [currentCity, setCurrentCity] = useState('Karagandy');
     const plus = Math.round(Number(data?.main?.temp)) > 0 ? '+' : '';
     const cities_kz =
@@ -98,8 +98,8 @@ export default function WeatherPanel({ data }: WeatherPanelProps) {
         localStorage.setItem('city', city);
         localStorage.setItem('lat', cities_kz[city as keyof typeof cities_kz].lat);
         localStorage.setItem('lon', cities_kz[city as keyof typeof cities_kz].lon);
-        if (setupWeather) {
-            setupWeather(
+        if (getWeather) {
+            getWeather(
                 cities_kz[city as keyof typeof cities_kz].lat,
                 cities_kz[city as keyof typeof cities_kz].lon
             );

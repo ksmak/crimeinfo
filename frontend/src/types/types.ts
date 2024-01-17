@@ -1,3 +1,31 @@
+export interface IUser {
+    email: string,
+    fullName?: string,
+}
+
+export interface IAuthContext {
+    user: IUser | null,
+    isAuthenticated: boolean,
+    roles: IUserRole[],
+    login: (user: IUser, accessToken: string, refreshToken: string) => void,
+    logout: () => void,
+    getUserRole: () => void,
+}
+
+export interface IMetaContext {
+    categories?: ICategory[] | undefined,
+    regions?: IDict[] | undefined,
+    districts?: IDict[] | undefined,
+    infoItems?: IInfo[] | undefined,
+    testItems?: ITest[] | undefined,
+    weather?: IWeather,
+    getWeather?: (lat: string, lon: string) => void,
+}
+
+export interface IUserRole {
+    role: string,
+}
+
 export enum UserRole {
     admin = 'admin',
     item_edit = 'item_edit',
@@ -10,7 +38,7 @@ export interface Menu {
     link: string,
 }
 
-export interface Category {
+export interface ICategory {
     id: number,
     title_kk: string,
     title_ru: string,
@@ -20,12 +48,12 @@ export interface Category {
     type: 'category'
 }
 
-export interface Detail {
+export interface IDetail {
     field_name: string,
     value: string,
 }
 
-export interface Item {
+export interface IItem {
     id: number | null,
     is_active: boolean,
     is_reward: boolean,
@@ -45,7 +73,7 @@ export interface Item {
     time_of_action: string,
     data: {
         photos?: string[],
-        details?: Detail[],
+        details?: IDetail[],
     } | null,
     photo_path: string | null,
     created_at: string,
@@ -53,7 +81,7 @@ export interface Item {
     show_danger_label: boolean
 }
 
-export interface Dict {
+export interface IDict {
     id: number,
     title_kk: string,
     title_ru: string,
@@ -66,7 +94,7 @@ export enum CardType {
     grid = 'grid',
 }
 
-export interface Action {
+export interface IAction {
     label: string,
     onclick: () => void,
     icon: JSX.Element,
@@ -86,7 +114,7 @@ export type Media = {
     file: File,
 }
 
-export interface Comment {
+export interface IComment {
     id?: number | null,
     text?: string | null,
     item_id?: number | null,
@@ -96,19 +124,19 @@ export interface Comment {
     about?: boolean
 }
 
-export interface Profile {
+export interface IProfile {
     id?: number | null,
     username?: string | null,
     full_name?: string | null,
     avatar_url?: string | null,
 }
 
-export interface CategoryInfo {
+export interface ICategoryInfo {
     category_id: number,
     count: number,
 }
 
-export interface Info {
+export interface IInfo {
     id: number | null,
     is_active: boolean,
     order: number | null,
@@ -127,49 +155,49 @@ export interface Info {
     type: 'info'
 }
 
-export interface Question {
+export interface IQuestion {
     title: string,
     multyple: boolean,
     own_answer: boolean,
     answers: string[],
 }
 
-export interface TestType {
+export interface ITest {
     id: number | null,
     is_active: boolean,
     title_ru: string | null,
     title_kk: string | null,
     title_en: string | null,
     data: {
-        test_kk: Question[] | null,
-        test_ru: Question[] | null,
-        test_en: Question[] | null,
+        test_kk: IQuestion[] | null,
+        test_ru: IQuestion[] | null,
+        test_en: IQuestion[] | null,
     } | null,
     user_id: string | null,
     type: 'test_type'
 }
 
-export interface ResultTest {
+export interface IResultTest {
     question: string,
     answers: boolean[],
     own_answer?: string,
 }
 
-export interface TestResults {
+export interface ITestResults {
     test_id: number | null,
     data: {
-        results: ResultTest[]
+        results: IResultTest[]
     } | null,
 }
 
-export interface TestDataRow {
+export interface ITestDataRow {
     title: string,
     labels: string[],
     data: number[],
     own_answers: string[]
 }
 
-export interface Site {
+export interface ISite {
     href: string,
     title_kk: string,
     title_ru: string,
@@ -177,7 +205,7 @@ export interface Site {
     type: 'site'
 }
 
-export interface WeatherType {
+export interface IWeather {
     coord?: {
         lon?: number,
         lat?: number

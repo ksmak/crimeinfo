@@ -1,17 +1,18 @@
 import { Button, Card, CardBody, CardHeader, Carousel, IconButton, Typography } from "@material-tailwind/react";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../../App";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Info, Media, UserRole } from "../../../types/types";
+import { IInfo, Media, UserRole } from "../../../types/types";
 import moment from "moment";
-import { supabase } from "../../../api/supabase";
 import { ContentState, EditorState } from "draft-js";
 import htmlToDraft from "html-to-draftjs";
 import { Editor } from "react-draft-wysiwyg";
 import Loading from "../elements/Loading";
 import { getFileFromUrl } from "../../../utils/utils";
 import uuid from "react-uuid";
+import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
+import axios from "axios";
 
 
 interface InfoViewProps {
@@ -19,10 +20,10 @@ interface InfoViewProps {
 }
 
 const InfoView = ({ infoId }: InfoViewProps) => {
-    const { session, roles } = useContext(AuthContext);
+    const { user, roles } = useAuth();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [info, setInfo] = useState<Info>({
+    const [info, setInfo] = useState<IInfo>({
         id: null,
         title_ru: null,
         title_kk: null,
@@ -33,7 +34,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
         date_of_action: moment().format('YYYY-MM-DD'),
         data: null,
         photo_path: null
-    } as Info);
+    } as IInfo);
     const [medias, setMedias] = useState<Media[]>([]);
 
     useEffect(() => {
@@ -41,28 +42,26 @@ const InfoView = ({ infoId }: InfoViewProps) => {
         // eslint-disable-next-line
     }, [infoId]);
 
-    const getInfo = async () => {
+    const getInfo = () => {
         if (infoId) {
-            const { data } = await supabase
-                .from('info')
-                .select()
-                .or(`and(id.eq.${infoId},is_active.eq.true), and(id.eq.${infoId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-                .single();
-            if (data) {
-                setInfo(data);
-                if (data?.data?.photos) {
-                    let photosFromBase: Media[] = [];
-                    for (const url of data.data.photos) {
-                        const id = uuid();
-                        const file = await getFileFromUrl(url, id);
-                        photosFromBase.push({
-                            id: id,
-                            file: file,
-                        })
+            axios.get(`${process.env.REACT_APP_API_HOST}/info`)
+                .then(res => {
+                    setInfo(res.data);
+                    if (res.data?.data?.photos) {
+                        let photosFromBase: Media[] = [];
+                        for (const url of res.data.data.photos) {
+                            const id = uuid();
+                            getFileFromUrl(url, id)
+                                .then(file => {
+                                    photosFromBase.push({
+                                        id: id,
+                                        file: file,
+                                    })
+                                })
+                        }
+                        setMedias(photosFromBase);
                     }
-                    setMedias(photosFromBase);
-                }
-            }
+                })
         }
     }
 
@@ -77,7 +76,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
     return (
         <div className="w-full">
             <div className="flex flex-row justify-end py-4 pr-5">
-                {roles.includes(UserRole.admin) || (roles.includes(UserRole.info_edit) && info.user_id === session?.user.id)
+                {roles.some(item => item.role == UserRole.admin) || (roles.some(item => item.role == UserRole.info_edit) && info.user_id === session?.user.id)
                     ? <Button
                         className="bg-primary-500 mr-3"
                         size="sm"

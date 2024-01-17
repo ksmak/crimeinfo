@@ -4,11 +4,11 @@ sudo apt install postgresql postgresql-contrib
 
 #create database
 sudo -u postgres psql
-create database ekrimv;
-create user adm with password '12345';
-alter role adm set client_encoding to 'utf8';
-alter role adm set default_transaction_isolation to 'read committed';
-alter role adm set timezone to 'UTC';
-grant all privileges on database ekrimv to adm;
-alter database ekrimv owner to adm;
+create database crimeinfo;
+create user crimeinfo_user with password 'Zz@12345';
+alter role crimeinfo_user set client_encoding to 'utf8';
+alter role crimeinfo_user set default_transaction_isolation to 'read committed';
+alter role crimeinfo_user set timezone to 'UTC';
+grant all privileges on database crimeinfo to crimeinfo_user;
+alter database crimeinfo owner to crimeinfo_user;
 \q

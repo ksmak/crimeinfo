@@ -1,9 +1,9 @@
-import { Category } from "../../../types/types";
+import { ICategory } from "../../../types/types";
 import CategoryCard from "../cards/CategoryCard";
 import { MouseEvent, useRef, useState } from "react";
 
 interface CategoriesPanelProps {
-    categories: Category[] | undefined,
+    categories: ICategory[] | undefined,
 }
 
 const CategoriesPanel = ({ categories }: CategoriesPanelProps) => {

@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Input } from "@material-tailwind/react";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext, MetaDataContext } from "../../../App";
+import { useEffect, useState } from "react";
 import { BsFillPencilFill, BsSearch } from "react-icons/bs";
 import { UserRole } from "../../../types/types";
 import { Link } from "react-router-dom";
@@ -11,12 +10,14 @@ import CategoriesPanel from "../panels/CategoriesPanel";
 import ActionsPanel from "../panels/ActionsPanel";
 import NavigatorPanel from "../panels/NavigatorPanel";
 import BottomNavigation from "../panels/BottomNavigation";
+import { useMeta } from "../../../lib/meta";
+import { useAuth } from "../../../lib/auth";
 
 const MainPage = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const { categories } = useContext(MetaDataContext);
-    const { session, roles } = useContext(AuthContext);
+    const { isAuthenticated, roles } = useAuth();
+    const { categories } = useMeta();
     const [searchText, setSearchText] = useState('');
     const [first, setFirst] = useState(false);
     const actions = [
@@ -89,11 +90,11 @@ const MainPage = () => {
                 <hr className="bg-blue-gray-50 shadow-md shadow-blue-gray-100 h-5 w-full" />
             </div>
             <div className="text-end sticky bottom-5 mr-10">
-                {session?.user && (
-                    roles.includes(UserRole.admin) ||
-                    roles.includes(UserRole.item_edit) ||
-                    roles.includes(UserRole.info_edit) ||
-                    roles.includes(UserRole.test_edit))
+                {isAuthenticated && (
+                    roles.some(item => item.role == UserRole.admin) ||
+                    roles.some(item => item.role == UserRole.item_edit) ||
+                    roles.some(item => item.role == UserRole.info_edit) ||
+                    roles.some(item => item.role == UserRole.test_edit))
                     ? <ActionsPanel actions={actions} />
                     : null}
             </div>

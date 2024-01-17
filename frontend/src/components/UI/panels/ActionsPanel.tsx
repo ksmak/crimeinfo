@@ -1,15 +1,14 @@
 import { IconButton, SpeedDial, SpeedDialHandler, SpeedDialContent, SpeedDialAction, Typography } from "@material-tailwind/react";
-import { Action, UserRole } from "../../../types/types";
+import { IAction, UserRole } from "../../../types/types";
 import { AiOutlinePlus } from 'react-icons/ai';
-import { useContext } from "react";
-import { AuthContext } from "../../../App";
+import { useAuth } from "../../../lib/auth";
 
 interface ActionsPanelProps {
-    actions: Action[]
+    actions: IAction[]
 }
 
 const ActionsPanel = ({ actions }: ActionsPanelProps) => {
-    const { roles } = useContext(AuthContext);
+    const { roles } = useAuth();
 
     return (
         <SpeedDial placement="top">
@@ -20,7 +19,7 @@ const ActionsPanel = ({ actions }: ActionsPanelProps) => {
             </SpeedDialHandler>
             <SpeedDialContent>
                 {actions.map((action, index) => (
-                    roles.includes(UserRole.admin) || roles.includes(action.role)
+                    roles.some(item => item.role == UserRole.admin) || roles.some(item => item.role == action.role)
                         ? <SpeedDialAction key={index} onClick={action.onclick}>
                             {action.icon}
                             <Typography

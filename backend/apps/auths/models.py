@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import (
@@ -13,7 +15,7 @@ class MyUserManager(BaseUserManager):
         Creates and saves a User with the given email and password.
         """
         if not email:
-            raise ValidationError("Логин не должен быть пустым")
+            raise ValidationError("Логин(почта) не должен быть пустым")
 
         user = self.model(
             email=self.normalize_email(email),
@@ -31,6 +33,7 @@ class MyUserManager(BaseUserManager):
             email=email,
             password=password,
         )
+        user.is_active = True
         user.is_superuser = True
         user.is_staff = True
         user.save(using=self._db)
@@ -38,6 +41,7 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
+    MAX_ACTIVATION_CODE_SIZE = 32
     email = models.EmailField(
         verbose_name='логин(почта)',
         max_length=150,
@@ -71,9 +75,15 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True
     )
+    activation_code = models.CharField(
+        verbose_name='код активации',
+        max_length=MAX_ACTIVATION_CODE_SIZE,
+        blank=True,
+        null=True
+    )
     is_active = models.BooleanField(
         verbose_name='активность',
-        default=True
+        default=False
     )
     is_superuser = models.BooleanField(
         verbose_name='является администратором',
@@ -102,6 +112,21 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     @property
     def full_name(self):
         return f"{self.surname} {self.name} {self.patronymic}"
+
+    def get_activation_code(self, code_len: int):
+        digits = '0123456789'
+        alfabet = 'ABCDEFGHJKLMNOPQRSTVWXYZ'
+        symbols = digits + alfabet
+        code = []
+        for _ in range(code_len):
+            code.append(symbols[random.randint(0, len(symbols) - 1)])
+
+        return ''.join(code)
+
+    def save(self, *args, **kwargs):
+        self.activation_code = self.get_activation_code(
+            self.MAX_ACTIVATION_CODE_SIZE)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'пользователь'

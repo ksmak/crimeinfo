@@ -1,12 +1,12 @@
 import { Collapse } from "@material-tailwind/react";
-import { Dict, Item } from "../../../types/types";
+import { IDict, IItem } from "../../../types/types";
 import ItemCard from "../cards/ItemCard";
 
 
 interface ItemsPanelProps {
-    items: Item[] | undefined,
-    regions: Dict[] | undefined,
-    districts: Dict[] | undefined,
+    items: IItem[] | undefined,
+    regions: IDict[] | undefined,
+    districts: IDict[] | undefined,
     openItems: boolean,
 }
 

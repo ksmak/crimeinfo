@@ -1,17 +1,17 @@
 import { useTranslation } from "react-i18next";
 import NavigatorPanel from "../panels/NavigatorPanel";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Alert, Button } from "@material-tailwind/react";
-import { AuthContext } from "../../../App";
 import { useNavigate } from "react-router";
 import { supabase } from "../../../api/supabase";
-import { Comment } from "../../../types/types";
+import { IComment } from "../../../types/types";
+import { useAuth } from "../../../lib/auth";
 
 const AboutPage = () => {
     const { t, i18n } = useTranslation();
-    const { session } = useContext(AuthContext);
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
-    const [comment, setComment] = useState<Comment>({ about: true });
+    const [comment, setComment] = useState<IComment>({ about: true });
     const [error, setError] = useState('');
     const [openError, setOpenError] = useState(false);
     const [openSuccess, setOpenSuccess] = useState(false);
@@ -19,7 +19,7 @@ const AboutPage = () => {
     const handleAddComment = async () => {
         setError('');
         setOpenError(false);
-        if (!session?.user) {
+        if (!isAuthenticated) {
             navigate('/login')
         }
         if (!comment.text || comment.text.trim() === '') {

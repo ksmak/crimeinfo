@@ -1,10 +1,10 @@
 import { Typography } from "@material-tailwind/react";
-import { Comment } from "../../../types/types";
+import { IComment } from "../../../types/types";
 import CommentCard from "../cards/CommentCard";
 import { useTranslation } from "react-i18next";
 
 interface CommentsPanelProps {
-    comments: Comment[] | undefined,
+    comments: IComment[] | undefined,
     handleRemoveComment: (id: number | null | undefined) => void
 }
 const CommentsPanel = ({ comments, handleRemoveComment }: CommentsPanelProps) => {

@@ -7,6 +7,7 @@ from .models import (
     Item,
     Info,
     Test,
+    UserRole
 )
 from auths.serializers import MyUserSerializer
 
@@ -67,3 +68,12 @@ class TestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
         fields = '__all__'
+
+
+class UserRoleSerializer(serializers.ModelSerializer):
+    """
+    User role serializer
+    """
+    class Meta:
+        model = UserRole
+        fields = ('role', )

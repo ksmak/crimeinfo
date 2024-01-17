@@ -4,11 +4,11 @@ import Loading from "../elements/Loading";
 import { useTranslation } from "react-i18next";
 import { useContext, useState } from "react";
 import { supabase } from "../../../api/supabase";
-import { AuthContext } from "../../../App";
 import { useNavigate } from "react-router";
+import { useAuth } from "../../../lib/auth";
 
 const ChangePasswordPage = () => {
-    const { session } = useContext(AuthContext);
+    const { isAuthenticated } = useAuth();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [password, setPassword] = useState('');
@@ -40,7 +40,7 @@ const ChangePasswordPage = () => {
     return (
         <div className="container mx-auto flex flex-col justify-center items-center mt-24">
             <LanguagePanel />
-            {session
+            {isAuthenticated
                 ? <Card className="w-96">
                     <CardBody>
                         <div className="flex flex-col w-full">

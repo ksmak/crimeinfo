@@ -67,7 +67,6 @@ class Region(models.Model):
     class Meta:
         verbose_name = 'область'
         verbose_name_plural = 'области'
-        ordering = ('title', )
 
 
 class District(models.Model):
@@ -93,7 +92,6 @@ class District(models.Model):
     class Meta:
         verbose_name = 'район'
         verbose_name_plural = 'районы'
-        ordering = ('title', )
 
 
 class Item(models.Model):
@@ -181,13 +179,15 @@ class Item(models.Model):
         verbose_name='кем создан',
         to=get_user_model(),
         on_delete=models.RESTRICT,
+        related_name='item_create_users'
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
         on_delete=models.RESTRICT,
         null=True,
-        blank=True
+        blank=True,
+        related_name='item_change_users'
     )
     date_of_creation = models.DateTimeField(
         verbose_name='дата создания',
@@ -260,13 +260,15 @@ class Info(models.Model):
         verbose_name='кем создан',
         to=get_user_model(),
         on_delete=models.RESTRICT,
+        related_name='info_create_users'
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
         on_delete=models.RESTRICT,
         null=True,
-        blank=True
+        blank=True,
+        related_name='info_change_users'
     )
     date_of_creation = models.DateTimeField(
         verbose_name='дата создания',
@@ -317,13 +319,15 @@ class Test(models.Model):
         verbose_name='кем создан',
         to=get_user_model(),
         on_delete=models.RESTRICT,
+        related_name='test_create_users'
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
         on_delete=models.RESTRICT,
         null=True,
-        blank=True
+        blank=True,
+        related_name='test_change_users'
     )
     date_of_creation = models.DateTimeField(
         verbose_name='дата создания',

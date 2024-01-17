@@ -1,18 +1,18 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import NavigatorPanel from "../panels/NavigatorPanel";
-import { MetaDataContext } from "../../../App";
 import Loading from "../elements/Loading";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@material-tailwind/react";
-import { CategoryInfo } from "../../../types/types";
+import { ICategoryInfo } from "../../../types/types";
 import { supabase } from "../../../api/supabase";
 import { Link } from "react-router-dom";
+import { useMeta } from "../../../lib/meta";
 
 const CategoriesPage = () => {
     const { t, i18n } = useTranslation();
-    const { categories } = useContext(MetaDataContext);
+    const { categories } = useMeta();
     const [loading, setLoading] = useState(false);
-    const [categoryInfo, setCategoryInfo] = useState<CategoryInfo[]>([]);
+    const [categoryInfo, setCategoryInfo] = useState<ICategoryInfo[]>([]);
 
     const getCategoryInfo = async () => {
         const { data } = await supabase
