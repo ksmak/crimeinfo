@@ -3,31 +3,31 @@ import { useTranslation } from "react-i18next";
 import { Alert, Badge, Button, Card, CardBody, CardFooter, Collapse, Input } from "@material-tailwind/react";
 import { BsFilter, BsSearch } from "react-icons/bs";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "../../../api/supabase";
 import { IDetail, Field, IItem } from "../../../types/types";
 import ItemsPanel from "../panels/ItemsPanel";
 import NavigatorPanel from "../panels/NavigatorPanel";
 import Loading from "../elements/Loading";
 import InputField from "../elements/InputField";
 import SelectField from "../elements/SelectField";
-import { useAuth } from "../../../lib/auth";
 import { useMeta } from "../../../lib/meta";
 import instance from "../../../api/instance";
+import axios from "axios";
+import { useAuth } from "../../../lib/auth";
 
 type FilterType = {
-    searchText?: string | undefined,
-    category?: string | undefined,
-    region?: string | undefined,
-    district?: string | undefined,
-    punkt?: string | undefined,
-    date_of_action_start?: string | undefined,
-    date_of_action_end?: string | undefined,
-    details?: IDetail[] | undefined,
+    searchText?: string | undefined | null,
+    category?: string | undefined | null,
+    region?: string | undefined | null,
+    district?: string | undefined | null,
+    punkt?: string | undefined | null,
+    date_of_action_start?: string | undefined | null,
+    date_of_action_end?: string | undefined | null,
+    details?: IDetail[] | undefined | null,
 }
 
 const SearchPage = () => {
+    const { isAuthenticated } = useAuth();
     const [searchParams] = useSearchParams();
-    const { user, isAuthenticated } = useAuth();
     const { categories, regions, districts } = useMeta();
     const { t, i18n } = useTranslation();
     const [findItems, setFindItems] = useState<IItem[]>([]);
@@ -59,16 +59,25 @@ const SearchPage = () => {
 
         let query: string[] = [];
 
-        Object.keys(filter).forEach(item => query.push(`${item}=${filter[item as keyof typeof filter]}`))
+        Object.keys(filter).forEach(item => {
+            if (filter[item as keyof typeof filter]) {
+                query.push(`${item}=${filter[item as keyof typeof filter]}`)
+            }
+        })
 
-        const url = process.env.REACT_APP_API_HOST + '/api/items?' + query.join('&')
-        instance.get(url)
+        const url = process.env.REACT_APP_API_HOST + '/api/items?' + query.join('&');
+        let inst;
+        if (isAuthenticated) {
+            inst = instance;
+        } else {
+            inst = axios;
+        }
+        inst.get<IItem[]>(url)
             .then(res => {
-                const prunedData = res.data as IItem[];
                 if (filter.details && filter.details.length) {
                     const filterDetails = filter.details;
                     let filteredData: IItem[] = [];
-                    prunedData.forEach((item) => {
+                    res.data.forEach(item => {
                         let flag = false;
                         for (let i = 0; i < filterDetails.length; i++) {
                             flag = false;
@@ -99,7 +108,7 @@ const SearchPage = () => {
                         setFindItems([]);
                     }
                 } else {
-                    setFindItems(prunedData);
+                    setFindItems(res.data);
                 }
                 setLoading(false);
             })
@@ -120,11 +129,12 @@ const SearchPage = () => {
     }
 
     useEffect(() => {
+        setFilter({ ...filter, category: searchParams.get('category') })
         getCount();
         const category = categories?.find(category => category.id === Number(filter.category));
         setFields(category?.fields);
         // eslint-disable-next-line
-    }, [filter]);
+    }, [searchParams]);
 
     useEffect(() => {
         handleSearchItems();

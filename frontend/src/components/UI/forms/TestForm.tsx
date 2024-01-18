@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ITest, UserRole } from "../../../types/types";
 import { Alert, Button } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
@@ -111,7 +111,7 @@ const TestForm = ({ testId }: TestFormProps) => {
 
     return (
         <div className="p-5">
-            {roles.some(item => item.role in [UserRole.admin, UserRole.test_edit])
+            {roles.some(item => item.role === UserRole.admin || item.role === UserRole.test_edit)
                 ? <form method="post" action="/item" className="mt-4">
                     <div className="flex flex-row justify-end py-4">
                         <Button

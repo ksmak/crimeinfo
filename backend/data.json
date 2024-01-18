@@ -1,0 +1,609 @@
+[
+    {
+        "model": "main.category",
+        "pk": 1,
+        "fields": {
+            "order": 2,
+            "title_kk": "Ұялы \nтелефондар, аксессуарлар",
+            "title_ru": "Сотовые \nтелефоны, аксессуары",
+            "title_en": "Cell \nphones, accessories",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "imei",
+                    "type": "text",
+                    "title_ru": "IMEI код",
+                    "title_kk": "IMEI коды",
+                    "title_en": "IMEI code"
+                },
+                {
+                    "field_name": "number",
+                    "type": "text",
+                    "title_ru": "Номер телефона",
+                    "title_kk": "Телефон нөмірі",
+                    "title_en": "Phone number"
+                },
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                },
+                {
+                    "field_name": "production",
+                    "type": "text",
+                    "title_ru": "Производство",
+                    "title_kk": "Өндіріс",
+                    "title_en": "Production"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 2,
+        "fields": {
+            "order": 1,
+            "title_kk": "Автомото\nкөлік, автобұйымдар",
+            "title_ru": "Автомото\nтранспорт, автозапчасти",
+            "title_en": "Automoto\ntransport, auto parts",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "state_number",
+                    "type": "text",
+                    "title_ru": "Гос.номер",
+                    "title_kk": "Мемлекеттік нөмірі",
+                    "title_en": "State number"
+                },
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                },
+                {
+                    "field_name": "production",
+                    "type": "text",
+                    "title_ru": "Производство",
+                    "title_kk": "Өндіріс",
+                    "title_en": "Production"
+                },
+                {
+                    "field_name": "vin",
+                    "type": "text",
+                    "title_ru": "VIN",
+                    "title_kk": "VIN",
+                    "title_en": "VIN"
+                },
+                {
+                    "field_name": "card_body",
+                    "type": "text",
+                    "title_ru": "Кузов машины",
+                    "title_kk": "Машинаның корпусы",
+                    "title_en": "Card body"
+                },
+                {
+                    "field_name": "engine",
+                    "type": "text",
+                    "title_ru": "№ двигателя",
+                    "title_kk": "Қозғалтқыш №",
+                    "title_en": "Engine"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 3,
+        "fields": {
+            "order": 3,
+            "title_kk": "Велосипедтер\n",
+            "title_ru": "Велосипеды\n",
+            "title_en": "Bicycles\n",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 4,
+        "fields": {
+            "order": 4,
+            "title_kk": "Зергелік \nбұйымдар",
+            "title_ru": "Ювелирные \nизделия",
+            "title_en": "Jewelry\n",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 5,
+        "fields": {
+            "order": 8,
+            "title_kk": "Жануарлар\n",
+            "title_ru": "Животные\n",
+            "title_en": "Animals\n",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "breed",
+                    "type": "text",
+                    "title_ru": "Порода",
+                    "title_kk": "Тұқымы",
+                    "title_en": "Breed"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "age",
+                    "type": "text",
+                    "title_ru": "Возраст",
+                    "title_kk": "Жасы",
+                    "title_en": "Age"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 6,
+        "fields": {
+            "order": 6,
+            "title_kk": "Тұрмыстық \nтехника",
+            "title_ru": "Бытовая \nтехника",
+            "title_en": "Appliances\n",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 7,
+        "fields": {
+            "order": 7,
+            "title_kk": "Электро\nтауарлар",
+            "title_ru": "Электро\nтовары",
+            "title_en": "Electrical\ngoods",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 8,
+        "fields": {
+            "order": 9,
+            "title_kk": "Басқалар",
+            "title_ru": "Иные",
+            "title_en": "Others",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    },
+    {
+        "model": "main.category",
+        "pk": 9,
+        "fields": {
+            "order": 5,
+            "title_kk": "Компьютерлер, \nкомпоненттер",
+            "title_ru": "Компьютеры, \nкомплектую-щие",
+            "title_en": "Computers, \ncomponents",
+            "photo": null,
+            "fields": [
+                {
+                    "field_name": "brand",
+                    "type": "text",
+                    "title_ru": "Марка/Модель",
+                    "title_kk": "Маркасы/Моделі",
+                    "title_en": "Brand/Model"
+                },
+                {
+                    "field_name": "series",
+                    "type": "text",
+                    "title_ru": "Серийный номер",
+                    "title_kk": "Сериялық нөмірі",
+                    "title_en": "Serial number"
+                },
+                {
+                    "field_name": "manufacturer",
+                    "type": "text",
+                    "title_ru": "Завод изготовитель / Страна",
+                    "title_kk": "Зауыт өңдіруші / Елі",
+                    "title_en": "Manufacturer / Country"
+                },
+                {
+                    "field_name": "year_of_release",
+                    "type": "text",
+                    "title_ru": "Год выпуска",
+                    "title_kk": "Шығару жылы",
+                    "title_en": "Year of release"
+                },
+                {
+                    "field_name": "color",
+                    "type": "text",
+                    "title_ru": "Цвет",
+                    "title_kk": "Түсі",
+                    "title_en": "Сolor"
+                },
+                {
+                    "field_name": "v_size",
+                    "type": "text",
+                    "title_ru": "Размер",
+                    "title_kk": "Өлшемі",
+                    "title_en": "Size"
+                },
+                {
+                    "field_name": "features",
+                    "type": "text",
+                    "title_ru": "Особенности",
+                    "title_kk": "Ерекшеліктері",
+                    "title_en": "Features"
+                }
+            ]
+        }
+    }
+]

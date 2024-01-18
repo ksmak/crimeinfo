@@ -1,8 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Question, TestDataRow, TestResults, TestType, UserRole } from "../../../types/types";
-import { supabase } from "../../../api/supabase";
+import { IQuestion, ITestDataRow, ITestResults, ITest, UserRole } from "../../../types/types";
 import {
     Chart,
     BarElement,
@@ -15,28 +14,29 @@ import {
 import { Alert, Button } from "@material-tailwind/react";
 import { Bar } from "react-chartjs-2";
 import Loading from "../elements/Loading";
-import { AuthContext } from "../../../App";
+import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
 
 interface TestResultViewProps {
     testId: string | undefined
 }
 
 const TestResultView = ({ testId }: TestResultViewProps) => {
-    const { session, roles } = useContext(AuthContext);
+    const { roles } = useAuth();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [test, setTest] = useState<TestType>({
+    const [test, setTest] = useState<ITest>({
         id: null,
         title_ru: null,
         title_kk: null,
         title_en: null,
         data: null,
         user_id: null,
-    } as TestType);
-    const [testResults, setTestResults] = useState<TestResults[]>([]);
-    const [testData, setTestData] = useState<TestDataRow[]>([]);
+    } as ITest);
+    const [testResults, setTestResults] = useState<ITestResults[]>([]);
+    const [testData, setTestData] = useState<ITestDataRow[]>([]);
     const [title, setTitle] = useState('');
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<IQuestion[]>([]);
     const [participants, setParticipants] = useState('');
 
     useEffect(() => {
@@ -65,30 +65,24 @@ const TestResultView = ({ testId }: TestResultViewProps) => {
     }, [questions, testResults]);
 
     const getTest = async (testId: string) => {
-        const { data } = await supabase
-            .from('tests')
-            .select()
-            .or(`and(id.eq.${testId},is_active.eq.true), and(id.eq.${testId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-            .single();
-        if (data) {
-            const prundedData = data as TestType;
-            setTest(prundedData);
-        }
+        instance.get(`${process.env.REACT_APP_API_HOST}/tests/${testId}/`)
+            .then(res => {
+                setTest(res.data);
+            })
     }
 
     const getResults = async (testId: string) => {
-        const { data } = await supabase
-            .from('test_results')
-            .select()
-            .eq('test_id', testId);
-        if (data) {
-            const prundedData = data as TestResults[];
-            setTestResults(prundedData);
-        }
+        instance.get(`${process.env.REACT_APP_API_HOST}/test_results/get_by_test/${testId}/`)
+            .then(res => {
+                setTestResults(res.data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
 
     const calcTestResults = () => {
-        let arr: TestDataRow[] = [];
+        let arr: ITestDataRow[] = [];
         questions.forEach((q, index) => {
             const title = q.title;
             const labels = q.answers ? q.answers : [];
@@ -110,7 +104,7 @@ const TestResultView = ({ testId }: TestResultViewProps) => {
                     }
                 })
             });
-            const row: TestDataRow = {
+            const row: ITestDataRow = {
                 title: title,
                 labels: labels,
                 data: res,
@@ -132,7 +126,7 @@ const TestResultView = ({ testId }: TestResultViewProps) => {
 
     return (
         <div className="mt-4 p-5 flex flex-col">
-            {roles.includes(UserRole.admin) || (roles.includes(UserRole.test_edit) && test.user_id === session?.user.id)
+            {roles.some(item => item.role === UserRole.admin || item.role === UserRole.test_edit)
                 ? <div>
                     <div className="flex flex-row justify-end py-4 pr-5">
                         <Button

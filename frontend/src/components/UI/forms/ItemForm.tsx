@@ -1,7 +1,7 @@
 import { Alert, Button } from "@material-tailwind/react";
 import SelectField from "../elements/SelectField";
 import { IDetail, Field, IItem, Media, UserRole } from "../../../types/types";
-import { useEffect, useState } from "react";
+import React, { ReactEventHandler, ReactHTMLElement, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InputField from "../elements/InputField";
 import TextareaField from "../elements/TextareaField";
@@ -38,23 +38,25 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         id: null,
         is_active: false,
         is_reward: false,
-        category_id: null,
+        category: null,
         title_kk: null,
         title_ru: null,
         title_en: null,
         text_kk: null,
         text_ru: null,
         text_en: null,
-        region_id: null,
-        district_id: null,
+        region: null,
+        district: null,
         punkt_kk: null,
         punkt_ru: null,
         punkt_en: null,
         date_of_action: moment().format('YYYY-MM-DD'),
         time_of_action: moment().format('HH:MM'),
         data: null,
-        created_at: '',
-        user_id: '',
+        created_user: '',
+        change_user: '',
+        date_of_creation: '',
+        date_of_change: '',
         show_danger_label: false
     } as IItem);
     const [openDetail, setOpenDetail] = useState(false);
@@ -65,17 +67,17 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
     }, []);
 
     useEffect(() => {
-        if (item?.category_id) {
-            const category = categories?.find(category => category.id === item.category_id);
+        if (item?.category) {
+            const category = categories?.find(category => category.id === item.category);
             if (category && category.fields) {
                 setFields(category.fields);
             }
         }
-    }, [item?.category_id, categories])
+    }, [item?.category, categories])
 
     const getItem = async () => {
         if (itemId) {
-            instance.get(`${process.env.REACT_APP_API_HOST}/items/${itemId}/`)
+            instance.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`)
                 .then(res => {
                     setItem(res.data);
                     getMedias(res.data);
@@ -108,7 +110,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         }
     }
 
-    const handleSave = async () => {
+    const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         let newId = '';
         setErrors('');
         setIsError(false);
@@ -137,17 +140,18 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         setItem({ ...item, title_en: title_en });
         setItem({ ...item, text_kk: text_kk });
         setItem({ ...item, text_en: text_en });
-        const photo_path = item?.photo_path ? item.photo_path : `items/${uuid()}`;
-        const { uploadError, urls } = await uploadFiles('crimeinfo_storage', photo_path, medias);
-        if (uploadError) {
-            setLoading(false);
-            setErrors(uploadError.message);
-            setIsError(true);
-            setIsSuccesSave(false);
-            return;
-        }
+        //upload media
+        // const photo_path = item?.photo_path ? item.photo_path : `items/${uuid()}`;
+        // const { uploadError, urls } = await uploadFiles('crimeinfo_storage', photo_path, medias);
+        // if (uploadError) {
+        //     setLoading(false);
+        //     setErrors(uploadError.message);
+        //     setIsError(true);
+        //     setIsSuccesSave(false);
+        //     return;
+        // }
         if (item?.id) {
-            instance.put(`${process.env.REACT_APP_API_HOST}/items/`, item)
+            instance.post(`${process.env.REACT_APP_API_HOST}/api/items/`, item)
                 .then(res => {
                     setItem(res.data);
                     setLoading(false);
@@ -163,7 +167,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                     setIsSuccesSave(false);
                 })
         } else {
-            instance.post(`${process.env.REACT_APP_API_HOST}/items/`, item)
+            instance.post(`${process.env.REACT_APP_API_HOST}/api/items/`, item)
                 .then(res => {
                     setItem(res.data);
                     newId = res.data.id;
@@ -230,7 +234,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
 
     return (
         <div className="p-5">
-            {roles.some(item => item.role in [UserRole.admin, UserRole.item_edit])
+            {roles.some(item => item.role === UserRole.admin || item.role === UserRole.item_edit)
                 ? <form method="post" action="/item" className="mt-4">
                     <div className="flex flex-row justify-end py-4">
                         <Button
@@ -263,7 +267,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                             id="is_active"
                             type='checkbox'
                             name='is_active'
-                            checked={item.is_active}
+                            checked={item.is_active === true}
                             onChange={(e) => setItem({ ...item, is_active: !item.is_active })}
                             required={true}
                         />
@@ -272,8 +276,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                         <SelectField
                             name='category_id'
                             label={t('category')}
-                            value={String(item?.category_id)}
-                            onChange={(e) => setItem({ ...item, category_id: Number(e.target.value) })}
+                            value={String(item?.category)}
+                            onChange={(e) => setItem({ ...item, category: Number(e.target.value) })}
                             dict={categories}
                             required={true}
                         />
@@ -404,9 +408,9 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                         <SelectField
                             name='region_id'
                             label={t('region')}
-                            value={String(item.region_id)}
+                            value={String(item.region)}
                             dict={regions}
-                            onChange={(e) => setItem({ ...item, region_id: Number(e.target.value) })}
+                            onChange={(e) => setItem({ ...item, region: Number(e.target.value) })}
                             required={true}
                         />
                     </div>
@@ -414,9 +418,9 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                         <SelectField
                             name='district_id'
                             label={t('district')}
-                            value={String(item.district_id)}
+                            value={String(item.district)}
                             dict={districts}
-                            onChange={(e) => setItem({ ...item, district_id: Number(e.target.value) })}
+                            onChange={(e) => setItem({ ...item, district: Number(e.target.value) })}
                             required={true}
                         />
                     </div>

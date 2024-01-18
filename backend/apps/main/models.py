@@ -29,8 +29,8 @@ class Category(models.Model):
         blank=True,
         null=True
     )
-    data = models.JSONField(
-        verbose_name='json данные',
+    fields = models.JSONField(
+        verbose_name='поля',
         blank=True,
         null=True
     )
@@ -168,13 +168,6 @@ class Item(models.Model):
         verbose_name='показывать надпись: внимание похищенная вещь',
         default=False
     )
-    media = ArrayField(
-        models.FileField(
-            verbose_name='медиа-файлы',
-            upload_to='media/',
-            blank=True
-        )
-    )
     create_user = models.ForeignKey(
         verbose_name='кем создан',
         to=get_user_model(),
@@ -199,12 +192,35 @@ class Item(models.Model):
     )
 
     def __str__(self):
-        return f"{self.is_active} {self.category} {self.title_ru}"
+        return self.title_ru
 
     class Meta:
         verbose_name = 'объявление'
         verbose_name_plural = 'объявления'
         ordering = ('-date_of_creation', )
+
+
+class ItemFile(models.Model):
+    """
+    Item file model
+    """
+    item = models.ForeignKey(
+        verbose_name='объявление',
+        to=Item,
+        on_delete=models.RESTRICT,
+        related_name='files'
+    )
+    file = models.FileField(
+        verbose_name='файл',
+        upload_to='files/items/'
+    )
+
+    def __str__(self):
+        return f"Файл - {self.item}"
+
+    class Meta:
+        verbose_name = 'файл объявления'
+        verbose_name_plural = 'файлы объявлений'
 
 
 class Info(models.Model):
@@ -244,13 +260,6 @@ class Info(models.Model):
     text_en = models.TextField(
         verbose_name='описание на английском'
     )
-    media = ArrayField(
-        models.FileField(
-            verbose_name='медиа-файлы',
-            upload_to='media/',
-            blank=True
-        )
-    )
     data = models.JSONField(
         verbose_name='json данные',
         blank=True,
@@ -280,11 +289,34 @@ class Info(models.Model):
     )
 
     def __str__(self):
-        return f"{self.order} - {self.title}"
+        return self.title_ru
 
     class Meta:
         verbose_name = 'новость'
         verbose_name_plural = 'новости'
+
+
+class InfoFile(models.Model):
+    """
+    Info file model
+    """
+    info = models.ForeignKey(
+        verbose_name='новость',
+        to=Info,
+        on_delete=models.RESTRICT,
+        related_name='files'
+    )
+    file = models.FileField(
+        verbose_name='файл',
+        upload_to='files/info/'
+    )
+
+    def __str__(self):
+        return f"Файл - {self.info}"
+
+    class Meta:
+        verbose_name = 'файл новости'
+        verbose_name_plural = 'файлы новостей'
 
 
 class Test(models.Model):
@@ -344,6 +376,51 @@ class Test(models.Model):
     class Meta:
         verbose_name = 'опрос'
         verbose_name_plural = 'опросы'
+
+
+class TestResult(models.Model):
+    """
+    Test result model
+    """
+    test = models.ForeignKey(
+        verbose_name='тест',
+        to=Test,
+        on_delete=models.RESTRICT
+    )
+    data = models.JSONField(
+        verbose_name='json данные',
+        blank=True,
+        null=True
+    )
+    create_user = models.ForeignKey(
+        verbose_name='кем создан',
+        to=get_user_model(),
+        on_delete=models.RESTRICT,
+        related_name='test_result_create_users'
+    )
+    change_user = models.ForeignKey(
+        verbose_name='кем изменен',
+        to=get_user_model(),
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name='test_result_change_users'
+    )
+    date_of_creation = models.DateTimeField(
+        verbose_name='дата создания',
+        auto_now_add=True
+    )
+    date_of_change = models.DateTimeField(
+        verbose_name='дата изменения',
+        auto_now=True
+    )
+
+    def __str__(self):
+        return f"Резултаты теста {self.test}"
+
+    class Meta:
+        verbose_name = 'результат теста'
+        verbose_name_plural = 'результаты теста'
 
 
 class UserRole(models.Model):

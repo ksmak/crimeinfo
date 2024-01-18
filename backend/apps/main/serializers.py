@@ -5,8 +5,11 @@ from .models import (
     Region,
     District,
     Item,
+    ItemFile,
     Info,
+    InfoFile,
     Test,
+    TestResult,
     UserRole,
     Comment,
 )
@@ -40,16 +43,32 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ItemFileSerializer(serializers.ModelSerializer):
+    """
+    Item file serializer
+    """
+    class Meta:
+        model = ItemFile
+        fields = '__all__'
+
+
 class ItemSerializer(serializers.ModelSerializer):
     """
     Item serializer.
     """
-    region = RegionSerializer()
-    district = DistrictSerializer()
-    author = MyUserSerializer()
+    files = ItemFileSerializer(many=True)
 
     class Meta:
         model = Item
+        fields = '__all__'
+
+
+class InfoFileSerializer(serializers.ModelSerializer):
+    """
+    Info file serializer
+    """
+    class Meta:
+        model = InfoFile
         fields = '__all__'
 
 
@@ -57,6 +76,8 @@ class InfoSerializer(serializers.ModelSerializer):
     """
     Info serializer.
     """
+    files = InfoFileSerializer(many=True)
+
     class Meta:
         model = Info
         fields = '__all__'
@@ -68,6 +89,15 @@ class TestSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Test
+        fields = '__all__'
+
+
+class TestResultSerializer(serializers.ModelSerializer):
+    """
+    Test result serializer.
+    """
+    class Meta:
+        model = TestResult
         fields = '__all__'
 
 

@@ -3,8 +3,8 @@ import LanguagePanel from "../panels/LanguagePanel";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Loading from "../elements/Loading";
-import { supabase } from "../../../api/supabase";
 import { useNavigate } from "react-router";
+import axios from "axios";
 
 const ResetPasswordPage = () => {
     const { t } = useTranslation();
@@ -17,20 +17,19 @@ const ResetPasswordPage = () => {
 
     const handleResetPassword = async () => {
         setLoading(true);
-        const { error } = await supabase.auth.resetPasswordForEmail(
-            email, {
-            redirectTo: `${process.env.REACT_APP_HOST}/profile/change_password`
-        });
-        if (error) {
-            setLoading(false);
-            setMessage(error.message);
-            setError(true);
-            return;
-        };
-        setMessage(t('successReset'));
-        setSuccess(true);
-        setInterval(() => navigate('/'), 2000);
-        setLoading(false);
+        axios.post(`${process.env.REACT_APP_API_HOST}/users/reset_password/`, {
+            email: email
+        })
+            .then(res => {
+                setLoading(false);
+                setError(false);
+                navigate('/');
+            })
+            .catch(err => {
+                setLoading(false);
+                setMessage(err.message);
+                setError(true);
+            })
     };
 
     return (

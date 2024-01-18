@@ -8,8 +8,8 @@ class ItemEditor(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
+        # if request.user.is_authenticated:
+        return True
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
@@ -21,7 +21,7 @@ class ItemEditor(permissions.BasePermission):
         role = UserRole.objects.filter(
             user=request.user, role=UserRole.ROLE_ITEM_EDITOR)
 
-        if not role:
+        if role:
             return True
 
         return False
@@ -33,8 +33,8 @@ class InfoEditor(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
+        # if request.user.is_authenticated:
+        return True
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
@@ -46,7 +46,7 @@ class InfoEditor(permissions.BasePermission):
         role = UserRole.objects.filter(
             user=request.user, role=UserRole.ROLE_INFO_EDITOR)
 
-        if not role:
+        if role:
             return True
 
         return False
@@ -58,8 +58,8 @@ class TestEditor(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
+        # if request.user.is_authenticated:
+        return True
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
@@ -71,7 +71,7 @@ class TestEditor(permissions.BasePermission):
         role = UserRole.objects.filter(
             user=request.user, role=UserRole.ROLE_TEST_EDITOR)
 
-        if not role:
+        if role:
             return True
 
         return False

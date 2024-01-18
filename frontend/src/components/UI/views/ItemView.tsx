@@ -1,18 +1,20 @@
 import { Alert, Badge, Button, Card, CardBody, Carousel, Chip, IconButton, Typography } from "@material-tailwind/react";
-import { Comment, Detail, Item, Media, UserRole } from "../../../types/types";
+import { IComment, IDetail, IItem, Media, UserRole } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 import 'moment/locale/ru';
 import 'moment/locale/kk';
 import { useNavigate } from "react-router";
-import { useContext, useEffect, useState } from "react";
-import { supabase } from "../../../api/supabase";
-import { AuthContext, MetaDataContext } from "../../../App";
+import { useEffect, useState } from "react";
 import CommentsPanel from "../panels/CommentsPanel";
 import Loading from "../elements/Loading";
 import SocialButtonsPanel from "../panels/SocialButtonsPanel";
 import uuid from "react-uuid";
 import { getFileFromUrl } from "../../../utils/utils";
+import { useAuth } from "../../../lib/auth";
+import { useMeta } from "../../../lib/meta";
+import axios from "axios";
+import instance from "../../../api/instance";
 
 
 interface ItemViewProps {
@@ -20,38 +22,40 @@ interface ItemViewProps {
 }
 
 const ItemView = ({ itemId }: ItemViewProps) => {
-    const { session, roles } = useContext(AuthContext);
-    const { categories, regions, districts } = useContext(MetaDataContext);
+    const { isAuthenticated, roles } = useAuth();
+    const { categories, regions, districts } = useMeta();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [comment, setComment] = useState<Comment>();
+    const [comment, setComment] = useState<IComment>();
     const [openError, setOpenError] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [item, setItem] = useState<Item>({
+    const [item, setItem] = useState<IItem>({
         id: null,
-        category_id: null,
+        category: null,
         title_kk: null,
         title_ru: null,
         title_en: null,
         text_kk: null,
         text_ru: null,
         text_en: null,
-        region_id: null,
-        district_id: null,
+        region: null,
+        district: null,
         punkt_kk: null,
         punkt_ru: null,
         punkt_en: null,
         date_of_action: moment().format('YYYY-MM-DD'),
         time_of_action: moment().format('HH:MM'),
         data: null,
-        created_at: '',
-        user_id: '',
+        created_user: '',
+        change_user: '',
+        date_of_creation: '',
+        date_of_change: '',
         show_danger_label: false
-    } as Item);
-    const [comments, setComments] = useState<Comment[]>([]);
+    } as IItem);
+    const [comments, setComments] = useState<IComment[]>([]);
     const [medias, setMedias] = useState<Media[]>([]);
-    const [detailItem, setDetailItem] = useState<Detail | null>(null);
+    const [detailItem, setDetailItem] = useState<IDetail | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -63,40 +67,33 @@ const ItemView = ({ itemId }: ItemViewProps) => {
         // eslint-disable-next-line
     }, [itemId]);
 
-    const getItem = async (itemId: string) => {
-        const { data } = await supabase
-            .from('item')
-            .select()
-            .or(`and(id.eq.${itemId},is_active.eq.true), and(id.eq.${itemId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-            .single();
-        if (data) {
-            const prunedData = data as Item;
-            setItem(prunedData);
-            setComment({ item_id: prunedData.id });
-            if (data?.data?.photos) {
-                let photosFromBase: Media[] = [];
-                for (const url of data.data.photos) {
-                    const id = uuid();
-                    const file = await getFileFromUrl(url, id);
-                    photosFromBase.push({
-                        id: id,
-                        file: file,
-                    })
+    const getItem = (itemId: string) => {
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`)
+            .then(res => {
+                setItem(res.data);
+                setComment({ item_id: res.data.id });
+                if (res.data?.data?.photos) {
+                    let photosFromBase: Media[] = [];
+                    for (const url of res.data.data.photos) {
+                        const id = uuid();
+                        getFileFromUrl(url, id)
+                            .then(file => {
+                                photosFromBase.push({
+                                    id: id,
+                                    file: file,
+                                })
+                            })
+                    }
+                    setMedias(photosFromBase);
                 }
-                setMedias(photosFromBase);
-            }
-        }
+            })
     }
 
-    const getComments = async (itemId: string) => {
-        const { data } = await supabase
-            .from('comments')
-            .select()
-            .eq('item_id', itemId);
-        if (data) {
-            const prunedData = data as Comment[];
-            setComments(prunedData);
-        }
+    const getComments = (itemId: string) => {
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/comments/for_item?item_id=${itemId}`)
+            .then(res => {
+                setComments(res.data);
+            })
     }
 
     const getPlaceInfo = (): string => {
@@ -105,14 +102,14 @@ const ItemView = ({ itemId }: ItemViewProps) => {
         if (punkt) {
             place.push(punkt);
         }
-        if (item.district_id) {
-            const district = districts?.find(d => d.id === item.district_id);
+        if (item.district) {
+            const district = districts?.find(d => d.id === item.district);
             if (district) {
                 place.push(district[`title_${i18n.language}` as keyof typeof district]);
             }
         }
-        if (item.region_id) {
-            const region = regions?.find(r => r.id === item.region_id);
+        if (item.region) {
+            const region = regions?.find(r => r.id === item.region);
             if (region) {
                 place.push(region[`title_${i18n.language}` as keyof typeof region]);
             }
@@ -124,10 +121,10 @@ const ItemView = ({ itemId }: ItemViewProps) => {
     const title = item[`title_${i18n.language}` as keyof typeof item] as string;
     const place_info = getPlaceInfo();
     const text = item[`text_${i18n.language}` as keyof typeof item] as string;
-    const date_add = `${t('dateAdd')}: ${moment(item.created_at).locale(i18n.language).format('LL')}`;
+    const date_add = `${t('dateAdd')}: ${moment(item.date_of_creation).locale(i18n.language).format('LL')}`;
 
     const handleAddComment = async () => {
-        if (!session?.user) {
+        if (!isAuthenticated) {
             navigate('/login')
         }
         if (!comment?.text) {
@@ -136,39 +133,38 @@ const ItemView = ({ itemId }: ItemViewProps) => {
             return;
         }
         setLoading(true);
-        const { data, error } = await supabase
-            .from('comments')
-            .insert(comment)
-            .select()
-            .single();
-        if (error) {
-            setError(error.message);
-            setOpenError(true);
-        }
-        if (data) {
-            setComments([...comments, data]);
-        }
-        setComment({ item_id: item.id });
-        setLoading(false);
+        instance.post(`${process.env.REACT_APP_API_HOST}/comments`, comment)
+            .then(res => {
+                setComments([...comments, res.data]);
+                setComment({ item_id: item.id });
+                setLoading(false);
+            })
+            .catch(err => {
+                setLoading(false);
+                console.log(err);
+                setError(err.message);
+                setOpenError(true);
+            })
+
     }
 
     const handleRemoveComment = async (id: number | null | undefined) => {
         setLoading(true);
         if (id) {
-            const { error } = await supabase.from('comments').delete().eq('id', id);
-            if (error) {
-                setError(error.message);
-                setOpenError(true);
-                return;
-            }
-            if (item.id) {
-                getComments(String(item.id));
-            }
+            instance.delete(`${process.env.REACT_APP_API_HOST}/comments/${id}/`)
+                .then(res => {
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.log(err);
+                    setError(err.message);
+                    setOpenError(true);
+                })
         }
         setLoading(false);
     }
 
-    const handleClickChip = (detail: Detail) => {
+    const handleClickChip = (detail: IDetail) => {
         navigator.clipboard.writeText(detail.value).then(() => {
             setDetailItem(detail);
             setInterval(() => setDetailItem(null), 3000)
@@ -180,7 +176,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
     return (
         <div className="w-full container mx-auto">
             <div className="flex flex-row justify-end py-4 pr-5">
-                {roles.includes(UserRole.admin) || (roles.includes(UserRole.item_edit) && item.user_id === session?.user.id)
+                {roles.some(item => item.role === UserRole.admin || item.role === UserRole.item_edit)
                     ? <Button
                         className="bg-primary-500 mr-3"
                         size="sm"
@@ -239,7 +235,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                             <div className="flex flex-row flex-wrap gap-2">
                                 {item.data?.details
                                     ? item.data.details.map((detail, index) => {
-                                        let category = categories?.find(category => category.id === item.category_id);
+                                        let category = categories?.find(category => category.id === item.category);
                                         let field = category?.fields.find(field => field.field_name === detail.field_name);
                                         let title = field ? field[`title_${i18n.language}` as keyof typeof field] as string : '';
                                         let display = `${title}:${detail.value}`;
@@ -348,7 +344,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                                     })
                                     : <img
                                         className="w-full h-96 object-contain object-center"
-                                        src={`/default${item.category_id}.png`}
+                                        src={`/default${item.category}.png`}
                                         alt="default"
                                     />}
                             </Carousel>

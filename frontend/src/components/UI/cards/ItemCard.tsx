@@ -43,14 +43,14 @@ const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
         if (punkt) {
             place.push(punkt);
         }
-        if (item.district_id) {
-            const district = districts?.find(d => d.id === item.district_id);
+        if (item.district) {
+            const district = districts?.find(d => d.id === item.district);
             if (district) {
                 place.push(district[`title_${i18n.language}` as keyof typeof district]);
             }
         }
-        if (item.region_id) {
-            const region = regions?.find(r => r.id === item.region_id);
+        if (item.region) {
+            const region = regions?.find(r => r.id === item.region);
             if (region) {
                 place.push(region[`title_${i18n.language}` as keyof typeof region]);
             }
@@ -144,7 +144,7 @@ const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
                     })
                     : <img
                         className="w-96 h-64 object-cover object-center"
-                        src={`default${item.category_id}.png`}
+                        src={`default${item.category}.png`}
                         alt="default"
                     />}
             </Carousel>

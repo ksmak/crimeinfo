@@ -4,9 +4,9 @@ import Loading from "../elements/Loading";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@material-tailwind/react";
 import { ICategoryInfo } from "../../../types/types";
-import { supabase } from "../../../api/supabase";
 import { Link } from "react-router-dom";
 import { useMeta } from "../../../lib/meta";
+import axios from "axios";
 
 const CategoriesPage = () => {
     const { t, i18n } = useTranslation();
@@ -15,12 +15,13 @@ const CategoriesPage = () => {
     const [categoryInfo, setCategoryInfo] = useState<ICategoryInfo[]>([]);
 
     const getCategoryInfo = async () => {
-        const { data } = await supabase
-            .from('category_info')
-            .select()
-        if (data) {
-            setCategoryInfo(data);
-        }
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/items/group_by_category/`)
+            .then(res => {
+                setCategoryInfo(res.data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
 
     useEffect(() => {
@@ -52,9 +53,9 @@ const CategoriesPage = () => {
                 {categoryInfo
                     ? categories?.map((category) => {
                         let title = category[`title_${i18n.language}` as keyof typeof category] as string;
-                        let catInfo = categoryInfo.find(cat => cat.category_id === category.id);
+                        let catInfo = categoryInfo.find(cat => cat.category === category.id);
                         if (catInfo) {
-                            title = `${title} (${catInfo.count})`
+                            title = `${title} (${catInfo.cnt})`
                         }
                         return (
                             <div key={category.id} className="w-full mb-4 border-2 border-blue-gray-200 rounded-md p-3">

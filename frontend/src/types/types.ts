@@ -1,3 +1,8 @@
+export interface IToken {
+    user_id: number,
+    email: string
+}
+
 export interface IUser {
     id: number,
     email: string,
@@ -8,7 +13,7 @@ export interface IAuthContext {
     user: IUser | null,
     isAuthenticated: boolean,
     roles: IUserRole[],
-    login: (user: IUser, accessToken: string, refreshToken: string) => void,
+    login: (accessToken: string, refreshToken: string) => void,
     logout: () => void,
     getUserRole: () => void,
 }
@@ -58,15 +63,15 @@ export interface IItem {
     id: number | null,
     is_active: boolean,
     is_reward: boolean,
-    category_id: number | null,
+    category: number | null,
     title_kk: string | null,
     title_ru: string | null,
     title_en: string | null,
     text_kk: string | null,
     text_ru: string | null,
     text_en: string | null,
-    region_id: number | null,
-    district_id: number | null,
+    region: number | null,
+    district: number | null,
     punkt_kk: string | null,
     punkt_ru: string | null,
     punkt_en: string | null,
@@ -77,8 +82,10 @@ export interface IItem {
         details?: IDetail[],
     } | null,
     photo_path: string | null,
-    created_at: string,
-    user_id: string,
+    created_user: string,
+    change_user: string,
+    date_of_creation: string,
+    date_of_change: string,
     show_danger_label: boolean
 }
 
@@ -133,8 +140,8 @@ export interface IProfile {
 }
 
 export interface ICategoryInfo {
-    category_id: number,
-    count: number,
+    category: number,
+    cnt: number,
 }
 
 export interface IInfo {

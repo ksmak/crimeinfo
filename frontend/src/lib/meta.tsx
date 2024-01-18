@@ -33,7 +33,12 @@ export function MetaProvider({ children }: any) {
     const getCategories = () => {
         axios.get<ICategory[]>(`${process.env.REACT_APP_API_HOST}/api/categories/`)
             .then(res => {
-                setCategories(res.data)
+                let arr = res.data.map(item => {
+                    item.type = 'category';
+                    return item
+                })
+                setCategories(arr);
+
             })
             .catch(err => {
                 console.log(err);
@@ -71,9 +76,9 @@ export function MetaProvider({ children }: any) {
     }
 
     const getTestItems = () => {
-        axios.get<IInfo[]>(`${process.env.REACT_APP_API_HOST}/api/tests/`)
+        axios.get<ITest[]>(`${process.env.REACT_APP_API_HOST}/api/tests/`)
             .then(res => {
-                setInfoItems(res.data);
+                setTestItems(res.data);
             })
             .catch(err => {
                 console.log(err);

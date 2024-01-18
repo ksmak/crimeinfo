@@ -11,7 +11,6 @@ import Loading from "../elements/Loading";
 import { getFileFromUrl } from "../../../utils/utils";
 import uuid from "react-uuid";
 import { useAuth } from "../../../lib/auth";
-import instance from "../../../api/instance";
 import axios from "axios";
 
 
@@ -20,7 +19,7 @@ interface InfoViewProps {
 }
 
 const InfoView = ({ infoId }: InfoViewProps) => {
-    const { user, roles } = useAuth();
+    const { roles } = useAuth();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [info, setInfo] = useState<IInfo>({
@@ -44,7 +43,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
 
     const getInfo = () => {
         if (infoId) {
-            axios.get(`${process.env.REACT_APP_API_HOST}/info`)
+            axios.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}/`)
                 .then(res => {
                     setInfo(res.data);
                     if (res.data?.data?.photos) {
@@ -76,7 +75,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
     return (
         <div className="w-full">
             <div className="flex flex-row justify-end py-4 pr-5">
-                {roles.some(item => item.role == UserRole.admin) || (roles.some(item => item.role == UserRole.info_edit) && info.user_id === session?.user.id)
+                {roles.some(item => item.role === UserRole.admin || item.role === UserRole.info_edit)
                     ? <Button
                         className="bg-primary-500 mr-3"
                         size="sm"

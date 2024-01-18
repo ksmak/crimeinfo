@@ -1,33 +1,33 @@
-import { ChangeEvent, useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../../App";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { ResultTest, TestType, UserRole, Question } from "../../../types/types";
-import { supabase } from "../../../api/supabase";
+import { IResultTest, ITest, UserRole, IQuestion } from "../../../types/types";
 import Loading from "../elements/Loading";
 import { Alert, Button } from "@material-tailwind/react";
+import { useAuth } from "../../../lib/auth";
+import axios from "axios";
 
 interface TestViewProps {
     testId: string | undefined
 }
 
 const TestView = ({ testId }: TestViewProps) => {
-    const { session, roles } = useContext(AuthContext);
+    const { roles } = useAuth();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [test, setTest] = useState<TestType>({
+    const [test, setTest] = useState<ITest>({
         id: null,
         title_ru: null,
         title_kk: null,
         title_en: null,
         data: null,
         user_id: null,
-    } as TestType);
-    const [results, setResults] = useState<ResultTest[]>([]);
+    } as ITest);
+    const [results, setResults] = useState<IResultTest[]>([]);
     const [openError, setOpenError] = useState(false);
     const [error, setError] = useState('');
     const [title, setTitle] = useState('');
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<IQuestion[]>([]);
 
     useEffect(() => {
         if (testId) {
@@ -47,25 +47,20 @@ const TestView = ({ testId }: TestViewProps) => {
     }, [test, i18n.language])
 
     const getTest = async (testId: string) => {
-        const { data } = await supabase
-            .from('tests')
-            .select()
-            .or(`and(id.eq.${testId}, is_active.eq.true), and(id.eq.${testId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-            .single();
-        if (data) {
-            const prundedData = data as TestType;
-            setTest(prundedData);
-            const questions = prundedData.data && prundedData.data[`test_${i18n.language}` as keyof typeof prundedData.data];
-            if (questions) {
-                const newResults: ResultTest[] = questions.map((q, i) => {
-                    return ({
-                        question: String(i + 1),
-                        answers: q.answers ? new Array(q.answers.length).fill(false) : [],
-                    })
-                });
-                setResults(newResults);
-            }
-        }
+        axios.get(`${process.env.REACT_APP_API_HOST}/tests/${testId}/`)
+            .then(res => {
+                setTest(res.data);
+                const questions: { answers: boolean[] }[] = res.data.data && res.data.data[`test_${i18n.language}` as keyof typeof res.data.data];
+                if (questions) {
+                    const newResults: IResultTest[] = questions.map((q, i) => {
+                        return ({
+                            question: String(i + 1),
+                            answers: q.answers ? new Array(q.answers.length).fill(false) : [],
+                        })
+                    });
+                    setResults(newResults);
+                }
+            })
     }
 
     const handleSaveTest = async () => {
@@ -80,40 +75,40 @@ const TestView = ({ testId }: TestViewProps) => {
                 return;
             }
         }
-        const { error } = await supabase
-            .from('test_results')
-            .insert({
-                test_id: test.id,
-                data: { results: results }
-            });
-        if (error) {
-            setError(error.message);
-            setOpenError(true);
-            return;
-        }
-        navigate('/test_success');
+        axios.post(`${process.env.REACT_APP_API_HOST}/test_results/`, {
+            test_id: test.id,
+            data: { results: results }
+        })
+            .then(res => {
+                navigate('/test_success');
+            })
+            .catch(err => {
+                console.log(err);
+                setError(err.message);
+                setOpenError(true);
+            })
     }
 
     return (
         <div className="w-full  container mx-auto p-5" >
             <div className="flex flex-row justify-end py-4 pr-5">
-                {roles.includes(UserRole.admin) || (roles.includes(UserRole.test_edit) && test.user_id === session?.user.id)
-                    ? <Button
-                        className="bg-primary-500 mr-3"
-                        size="sm"
-                        onClick={() => navigate(`/test_result/${test.id}`)}
-                    >
-                        {t('results')}
-                    </Button>
-                    : null}
-                {roles.includes(UserRole.admin) || (roles.includes(UserRole.test_edit) && test.user_id === session?.user.id)
-                    ? <Button
-                        className="bg-primary-500 mr-3"
-                        size="sm"
-                        onClick={() => navigate(`/tests/edit/${test.id}`)}
-                    >
-                        {t('edit')}
-                    </Button>
+                {roles.some(item => item.role === UserRole.admin || item.role === UserRole.test_edit)
+                    ? <div>
+                        <Button
+                            className="bg-primary-500 mr-3"
+                            size="sm"
+                            onClick={() => navigate(`/test_result/${test.id}`)}
+                        >
+                            {t('results')}
+                        </Button>
+                        <Button
+                            className="bg-primary-500 mr-3"
+                            size="sm"
+                            onClick={() => navigate(`/tests/edit/${test.id}`)}
+                        >
+                            {t('edit')}
+                        </Button>
+                    </div>
                     : null}
             </div>
             {test.id && results.length > 0

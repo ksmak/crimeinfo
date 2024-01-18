@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { IWeather } from "../../../types/types";
 import { useMeta } from "../../../lib/meta";
 

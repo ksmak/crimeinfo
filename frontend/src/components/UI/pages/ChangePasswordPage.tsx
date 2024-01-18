@@ -2,10 +2,10 @@ import { Alert, Button, Card, CardBody, Input } from "@material-tailwind/react";
 import LanguagePanel from "../panels/LanguagePanel";
 import Loading from "../elements/Loading";
 import { useTranslation } from "react-i18next";
-import { useContext, useState } from "react";
-import { supabase } from "../../../api/supabase";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
 
 const ChangePasswordPage = () => {
     const { isAuthenticated } = useAuth();
@@ -22,19 +22,21 @@ const ChangePasswordPage = () => {
         setError(false);
         setSuccess(false);
         setLoading(true);
-        const { error } = await supabase.auth.updateUser({
+        instance.post(`${process.env.REACT_APP_API_HOST}/users/change_password/`, {
             password: password
-        });
-        if (error) {
-            setLoading(false);
-            setMessage(error.message);
-            setError(true);
-            return;
-        };
-        setMessage(t('successUpdatePassword'));
-        setSuccess(true);
-        setInterval(() => navigate('/'), 2000);
-        setLoading(false);
+        })
+            .then(res => {
+                setMessage(t('successUpdatePassword'));
+                setSuccess(true);
+                setInterval(() => navigate('/'), 2000);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.log(err);
+                setLoading(false);
+                setMessage(err.message);
+                setError(true);
+            })
     }
 
     return (

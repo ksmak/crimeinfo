@@ -4,8 +4,10 @@ import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import axios from "axios";
+import { useAuth } from "../../../lib/auth";
 
 const LoginPage = () => {
+    const { login } = useAuth();
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [email, setEmail] = useState<string>('');
@@ -50,9 +52,7 @@ const LoginPage = () => {
         })
             .then(res => {
                 setLoading(false);
-                localStorage.setItem('username', email);
-                localStorage.setItem('access_token', res.data.access);
-                localStorage.setItem('refresh_token', res.data.refresh);
+                login(res.data.access, res.data.refresh);
                 navigate(-1);
             })
             .catch(err => {

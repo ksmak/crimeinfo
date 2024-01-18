@@ -1,14 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { IAuthContext, IUser, IUserRole } from "../types/types";
+import { IAuthContext, IToken, IUser, IUserRole } from "../types/types";
 import { Navigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import instance from "../api/instance";
 
 const AuthContext = createContext<IAuthContext>({
     user: null,
     isAuthenticated: false,
     roles: [],
-    login: (user: IUser, accessToken: string, refreshToken: string) => { },
+    login: (accessToken: string, refreshToken: string) => { },
     logout: () => { },
     getUserRole: () => { },
 });
@@ -23,23 +24,27 @@ export function AuthProvider({ children }: any) {
     const [roles, setRoles] = useState<IUserRole[]>([]);
 
     useEffect(() => {
-        const username = localStorage.getItem('username');
         const accessToken = localStorage.getItem('access_token');
         const refreshToken = localStorage.getItem('refresh_token');
-        if (username && accessToken && refreshToken) {
-            axios.post(`${process.env.REACT_APP_API_HOST}/login/refresh`, {
+        if (accessToken && refreshToken) {
+            axios.post(`${process.env.REACT_APP_API_HOST}/auth/login/refresh/`, {
                 refresh: refreshToken
             })
                 .then(res => {
-                    login({ email: username }, res.data.access, res.data.refresh);
+                    login(res.data.access, refreshToken);
+                    getUserRole();
+                })
+                .catch(err => {
+                    console.log(err);
+                    logout();
                 })
         }
     }, [])
 
-    function login(user: IUser, accessToken: string, refreshToken: string) {
+    function login(accessToken: string, refreshToken: string) {
         setIsAuthenticated(true);
-        setUser(user);
-        localStorage.setItem('username', user.email);
+        const decoded = jwtDecode<IToken>(accessToken);
+        setUser({ id: decoded.user_id, email: decoded.email });
         localStorage.setItem('access_token', accessToken);
         localStorage.setItem('refresh_token', refreshToken);
     }
@@ -47,15 +52,17 @@ export function AuthProvider({ children }: any) {
     const logout = () => {
         setIsAuthenticated(false);
         setUser(null);
-        localStorage.setItem('username', '');
         localStorage.setItem('access_token', '');
         localStorage.setItem('refresh_token', '');
     }
 
     const getUserRole = () => {
-        instance.get<IUserRole[]>(`${process.env.REACT_APP_API_HOST}/api/roles`)
+        instance.get<IUserRole[]>(`${process.env.REACT_APP_API_HOST}/api/roles/`)
             .then(res => {
                 setRoles(res.data)
+            })
+            .catch(err => {
+                console.log(err);
             })
     }
 

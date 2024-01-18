@@ -18,7 +18,7 @@ instance.interceptors.response.use((config) => {
         originalRequest._isRetry = true
         const response = await axios({
             method: 'post',
-            url: `${process.env.REACT_APP_HOST_API}/api/token/refresh/`,
+            url: `${process.env.REACT_APP_API_HOST}/auth/login/refresh/`,
             data: {
                 refresh: localStorage.getItem('refresh_token')
             },
@@ -28,11 +28,7 @@ instance.interceptors.response.use((config) => {
             withCredentials: true
         })
         if (response.status === 200) {
-            const milliseconds = process.env.REACT_APP_ACCESS_TOKEN_LIFETIME
-                ? parseInt(process.env.REACT_APP_ACCESS_TOKEN_LIFETIME)
-                : 0
             localStorage.setItem('access_token', response.data.access)
-            localStorage.setItem('refresh_token', response.data.refresh)
             return instance.request(originalRequest)
         } else {
             console.log('Error authorization!')

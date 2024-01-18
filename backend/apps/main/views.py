@@ -1,19 +1,20 @@
 from django.db.models import Q
+from django.db.models import Count
 
-from rest_framework.viewsets import (
-    ReadOnlyModelViewSet,
-    ModelViewSet,
-)
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import ListAPIView
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from .models import Category, District, Item, Info, Test
 from .serializers import (
     CategorySerializer,
+    RegionSerializer,
     DistrictSerializer,
     ItemSerializer,
     InfoSerializer,
     TestSerializer,
+    TestResultSerializer,
     UserRoleSerializer,
     CommentSerializer,
 )
@@ -23,10 +24,20 @@ from .permissions import (
     TestEditor,
     SelfUser,
 )
-from .models import UserRole, Comment
+from .models import (
+    Category,
+    Region,
+    District,
+    Item,
+    Info,
+    UserRole,
+    Comment,
+    Test,
+    TestResult
+)
 
 
-class CategoryViewSet(ReadOnlyModelViewSet):
+class CategoryView(ListAPIView):
     """
     Category viewset.
     """
@@ -35,7 +46,16 @@ class CategoryViewSet(ReadOnlyModelViewSet):
     permission_classes = (AllowAny, )
 
 
-class DistrictViewSet(ReadOnlyModelViewSet):
+class RegionView(ListAPIView):
+    """
+    Region viewset.
+    """
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+    permission_classes = (AllowAny, )
+
+
+class DistrictView(ListAPIView):
     """
     District viewset.
     """
@@ -52,7 +72,13 @@ class ItemViewSet(ModelViewSet):
     permission_classes = (ItemEditor, )
 
     def get_queryset(self):
-        queryset = Item.objects.filter(is_active=True)
+        queryset = None
+        if self.request.user.is_authenticated:
+            c1 = Q(create_user=self.request.user)
+            c2 = Q(change_user=self.request.user)
+            queryset = Item.objects.filter(c1 | c2)
+        else:
+            queryset = Item.objects.filter(is_active=True)
         searchText = self.request.query_params.get('searchText')
         category = self.request.query_params.get('category')
         region = self.request.query_params.get('region')
@@ -64,12 +90,12 @@ class ItemViewSet(ModelViewSet):
             'date_of_action_end')
 
         if searchText is not None:
-            c1 = Q(title_kk__contains=searchText)
-            c2 = Q(title_ru__contains=searchText)
-            c3 = Q(title_en__contains=searchText)
-            c4 = Q(text_kk__contains=searchText)
-            c5 = Q(text_ru__contains=searchText)
-            c6 = Q(text_en__contains=searchText)
+            c1 = Q(title_kk__icontains=searchText)
+            c2 = Q(title_ru__icontains=searchText)
+            c3 = Q(title_en__icontains=searchText)
+            c4 = Q(text_kk__icontains=searchText)
+            c5 = Q(text_ru__icontains=searchText)
+            c6 = Q(text_en__icontains=searchText)
             queryset = queryset.filter(c1 | c2 | c3 | c4 | c5 | c6)
 
         if category is not None:
@@ -82,9 +108,9 @@ class ItemViewSet(ModelViewSet):
             queryset = queryset.filter(district=district)
 
         if punkt is not None:
-            c1 = Q(punkt_kk__contains=searchText)
-            c2 = Q(punkt_ru__contains=searchText)
-            c3 = Q(punkt_en__contains=searchText)
+            c1 = Q(punkt_kk__icontains=searchText)
+            c2 = Q(punkt_ru__icontains=searchText)
+            c3 = Q(punkt_en__icontains=searchText)
             queryset = queryset.filter(c1 | c2 | c3)
 
         if date_of_action_start is not None:
@@ -98,23 +124,57 @@ class ItemViewSet(ModelViewSet):
 
         return queryset
 
+    @action(detail=False)
+    def group_by_category(self, request):
+        result = Item.objects.values(
+            'category').annotate(cnt=Count('category'))
+        return Response(result)
+
 
 class InfoViewSet(ModelViewSet):
     """
     Info viewset.
     """
-    queryset = Info.objects.filter(is_active=True)
     serializer_class = InfoSerializer
     permission_classes = (InfoEditor, )
 
+    def get_queryset(self):
+        queryset = None
+        if self.request.user.is_authenticated:
+            c1 = Q(create_user=self.request.user)
+            c2 = Q(change_user=self.request.user)
+            queryset = Info.objects.filter(c1 | c2)
+        else:
+            queryset = Info.objects.filter(is_active=True)
+        return queryset
 
-class TestViewSet(ReadOnlyModelViewSet):
+
+class TestViewSet(ModelViewSet):
     """
     Test viewset.
     """
-    queryset = Test.objects.filter(is_active=True)
     serializer_class = TestSerializer
     permission_classes = (TestEditor, )
+
+    def get_queryset(self):
+        queryset = None
+        if self.request.user.is_authenticated:
+            c1 = Q(create_user=self.request.user)
+            c2 = Q(change_user=self.request.user)
+            queryset = Test.objects.filter(c1 | c2)
+        else:
+            queryset = Test.objects.filter(is_active=True)
+
+        return queryset
+
+
+class TestResultViewSet(ModelViewSet):
+    """
+    Test result viewset.
+    """
+    queryset = TestResult.objects.all()
+    serializer_class = TestResultSerializer
+    permission_classes = (SelfUser, )
 
 
 class UserRoleView(ListAPIView):
@@ -135,4 +195,10 @@ class CommentViewSet(ModelViewSet):
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = (SelfUser, )
+    permission_classes = (AllowAny, )
+
+    @action(detail=False)
+    def for_item(self, request):
+        item_id = self.request.query_params.get('item_id')
+        result = Comment.objects.filter(item=item_id)
+        return Response(result)

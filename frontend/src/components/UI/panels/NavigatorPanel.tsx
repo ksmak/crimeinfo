@@ -1,6 +1,5 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Collapse, IconButton } from "@material-tailwind/react";
-import { supabase } from "../../../api/supabase";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { ISite } from "../../../types/types";
@@ -60,7 +59,6 @@ const NavigatorPanel = () => {
     ]
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
         logout();
     }
 

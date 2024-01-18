@@ -50,7 +50,6 @@ const MainPage = () => {
         }
         // eslint-disable-next-line
     }, [])
-
     return (
         <div className="h-[calc(100vh-5.75rem)]">
             <div className="flex flex-col w-full">
@@ -91,8 +90,8 @@ const MainPage = () => {
             </div>
             <div className="text-end sticky bottom-5 mr-10">
                 {isAuthenticated &&
-                    roles.some(item => item.role in [UserRole.admin, UserRole.item_edit, UserRole.info_edit, UserRole.test_edit])
-                    ? <ActionsPanel actions={actions} />
+                    roles.some(item => item.role === UserRole.item_edit || item.role === UserRole.admin)
+                    ? <ActionsPanel roles={roles} actions={actions} />
                     : null}
             </div>
         </div>

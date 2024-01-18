@@ -197,7 +197,7 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
 
     return (
         <div className="p-5">
-            {roles.some(item => item.role in [UserRole.admin, UserRole.info_edit])
+            {roles.some(item => item.role === UserRole.admin || item.role === UserRole.info_edit)
                 ? <div>
                     <div className="flex flex-row justify-end py-4">
                         <Button
