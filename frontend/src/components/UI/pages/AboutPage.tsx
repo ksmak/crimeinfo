@@ -3,9 +3,9 @@ import NavigatorPanel from "../panels/NavigatorPanel";
 import { useState } from "react";
 import { Alert, Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router";
-import { supabase } from "../../../api/supabase";
 import { IComment } from "../../../types/types";
 import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
 
 const AboutPage = () => {
     const { t, i18n } = useTranslation();
@@ -27,16 +27,18 @@ const AboutPage = () => {
             setOpenError(true);
             return;
         }
-        const { error } = await supabase
-            .from('comments')
-            .insert(comment)
-        if (error) {
-            setError(error.message);
-            setOpenError(true);
-        }
-        setComment({ about: true });
-        setOpenSuccess(true);
-        setInterval(() => setOpenSuccess(false), 3000);
+        instance.post(`${process.env.REACT_APP_API_HOST}/comments/`, comment)
+            .then(res => {
+                setComment({ about: true });
+                setOpenSuccess(true);
+                setInterval(() => setOpenSuccess(false), 3000);
+            })
+            .catch(err => {
+                console.log(err);
+                setError(err.message);
+                setOpenError(true);
+            })
+
     }
 
     const contacts = [

@@ -1,9 +1,8 @@
 import { Alert, Button } from "@material-tailwind/react"
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { supabase } from "../../../api/supabase";
-import { Info, Media, UserRole } from "../../../types/types";
+import { IInfo, Media, UserRole } from "../../../types/types";
 import Loading from "../elements/Loading";
 import InputField from "../elements/InputField";
 import moment from "moment";
@@ -14,7 +13,8 @@ import htmlToDraft from 'html-to-draftjs'
 import MediaTable from "../elements/MediaTable";
 import uuid from "react-uuid";
 import { getFileFromUrl, uploadFiles } from "../../../utils/utils";
-import { AuthContext } from "../../../App";
+import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
 
 
 interface InfoFormProps {
@@ -22,13 +22,13 @@ interface InfoFormProps {
 }
 
 const InfoForm = ({ infoId }: InfoFormProps) => {
-    const { session, roles } = useContext(AuthContext);
+    const { roles } = useAuth();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [openSucces, setOpenSuccess] = useState(false);
     const [openError, setOpenError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [info, setInfo] = useState<Info>({
+    const [info, setInfo] = useState<IInfo>({
         id: null,
         is_active: false,
         order: null,
@@ -41,7 +41,7 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
         date_of_action: moment().format('YYYY-MM-DD'),
         data: null,
         photo_path: null
-    } as Info);
+    } as IInfo);
     const [loading, setLoading] = useState(false);
     const [editorStateKk, setEditorStateKk] = useState<EditorState>(EditorState.createEmpty());
     const [editorStateRu, setEditorStateRu] = useState<EditorState>(EditorState.createEmpty());
@@ -83,42 +83,40 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
 
     const getInfo = async () => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from('info')
-            .select()
-            .or(`and(id.eq.${infoId},is_active.eq.true), and(id.eq.${infoId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-            .single();
-        if (error) {
-            setLoading(false);
-            setErrorMessage(error.message);
-            setOpenError(true);
-            return;
-        }
-        if (data) {
-            setInfo(data);
-            if (data.data?.photos) {
-                let photosFromBase: Media[] = [];
-                for (const url of data.data.photos) {
-                    const id = uuid();
-                    const file = await getFileFromUrl(url, id);
-                    photosFromBase.push({
-                        id: id,
-                        file: file,
-                    })
+        instance.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}`)
+            .then(res => {
+                setInfo(res.data);
+                if (res.data.data?.photos) {
+                    let photosFromBase: Media[] = [];
+                    for (const url of res.data.data.photos) {
+                        const id = uuid();
+                        getFileFromUrl(url, id)
+                            .then(file => {
+                                photosFromBase.push({
+                                    id: id,
+                                    file: file,
+                                })
+                            })
+                    }
+                    setMedias(photosFromBase);
                 }
-                setMedias(photosFromBase);
-            }
-            if (data.text_kk) {
-                setEditorStateKk(setContent(data.text_kk));
-            }
-            if (data.text_ru) {
-                setEditorStateRu(setContent(data.text_ru));
-            }
-            if (data.text_en) {
-                setEditorStateEn(setContent(data.text_en));
-            }
-        }
-        setLoading(false);
+                if (res.data.text_kk) {
+                    setEditorStateKk(setContent(res.data.text_kk));
+                }
+                if (res.data.text_ru) {
+                    setEditorStateRu(setContent(res.data.text_ru));
+                }
+                if (res.data.text_en) {
+                    setEditorStateEn(setContent(res.data.text_en));
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.log(err);
+                setLoading(false);
+                setErrorMessage(err.message);
+                setOpenError(true);
+            })
     }
 
     const handleSave = async () => {
@@ -138,63 +136,39 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
         }
         setInfo({ ...info, photo_path: photo_path });
         if (info.id) {
-            const { error } = await supabase.from('info')
-                .update({
-                    is_active: info.is_active,
-                    order: info.order,
-                    title_kk: info.title_kk,
-                    title_ru: info.title_ru,
-                    title_en: info.title_en,
-                    text_kk: info.text_kk,
-                    text_ru: info.text_ru,
-                    text_en: info.text_en,
-                    date_of_action: info.date_of_action,
-                    photo_path: photo_path,
-                    data: { photos: urls },
+            instance.put(`${process.env.REACT_APP_API_HOST}/info/`, info)
+                .then(res => {
+                    setInfo(res.data);
+                    setLoading(false);
+                    setOpenError(false);
+                    setOpenSuccess(true);
+                    setInterval(() => setOpenSuccess(false), 3000);
                 })
-                .eq('id', info.id);
-            if (error) {
-                setLoading(false);
-                setErrorMessage(error.message);
-                setOpenError(true);
-                setOpenSuccess(false);
-                return;
-            }
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrorMessage(err.message);
+                    setOpenError(true);
+                    setOpenSuccess(false);
+                })
         } else {
-            const { data, error } = await supabase.from('info')
-                .insert({
-                    is_active: info.is_active,
-                    order: info.order,
-                    title_kk: info.title_kk,
-                    title_ru: info.title_ru,
-                    title_en: info.title_en,
-                    text_kk: info.text_kk,
-                    text_ru: info.text_ru,
-                    text_en: info.text_en,
-                    date_of_action: info.date_of_action,
-                    photo_path: photo_path,
-                    data: { photos: urls },
+            instance.post(`${process.env.REACT_APP_API_HOST}/info/`, info)
+                .then(res => {
+                    setInfo(res.data);
+                    setLoading(false);
+                    setOpenError(false);
+                    setOpenSuccess(true);
+                    setInterval(() => setOpenSuccess(false), 3000);
+                    newId = res.data.id;
+                    navigate(`/info/edit/${newId}`);
                 })
-                .select()
-                .single();
-            if (error) {
-                setLoading(false);
-                setErrorMessage(error.message);
-                setOpenError(true);
-                setOpenSuccess(false);
-                return;
-            }
-            if (data) {
-                setInfo(data);
-                newId = data.id;
-            }
-        }
-        setLoading(false);
-        setOpenError(false);
-        setOpenSuccess(true);
-        setInterval(() => setOpenSuccess(false), 3000);
-        if (newId) {
-            navigate(`/info/edit/${newId}`);
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrorMessage(err.message);
+                    setOpenError(true);
+                    setOpenSuccess(false);
+                })
         }
     }
 
@@ -223,7 +197,7 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
 
     return (
         <div className="p-5">
-            {roles.includes(UserRole.admin) || (roles.includes(UserRole.info_edit) && info.user_id === session?.user.id)
+            {roles.some(item => item.role in [UserRole.admin, UserRole.info_edit])
                 ? <div>
                     <div className="flex flex-row justify-end py-4">
                         <Button

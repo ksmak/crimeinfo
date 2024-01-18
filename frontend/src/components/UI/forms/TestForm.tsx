@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../../App";
-import { TestType, UserRole } from "../../../types/types";
+import { ITest, UserRole } from "../../../types/types";
 import { Alert, Button } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "../../../api/supabase";
 import InputField from "../elements/InputField";
 import TextareaField from "../elements/TextareaField";
 import { useNavigate } from "react-router";
 import Loading from "../elements/Loading";
+import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
 
 
 interface TestFormProps {
@@ -15,14 +15,14 @@ interface TestFormProps {
 }
 
 const TestForm = ({ testId }: TestFormProps) => {
-    const { session, roles } = useContext(AuthContext);
+    const { roles } = useAuth();
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [isSuccesSave, setIsSuccesSave] = useState(false);
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState('');
-    const [test, setTest] = useState<TestType>({
+    const [test, setTest] = useState<ITest>({
         id: null,
         is_active: false,
         title_ru: null,
@@ -30,7 +30,7 @@ const TestForm = ({ testId }: TestFormProps) => {
         title_en: null,
         data: null,
         user_id: null,
-    } as TestType);
+    } as ITest);
     const [jsonData, setJsonData] = useState('');
 
     useEffect(() => {
@@ -41,16 +41,14 @@ const TestForm = ({ testId }: TestFormProps) => {
     }, []);
 
     const getTest = async (testId: string) => {
-        const { data } = await supabase
-            .from('tests')
-            .select()
-            .or(`and(id.eq.${testId},is_active.eq.true), and(id.eq.${testId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-            .single();
-        if (data) {
-            const prundedData = data as TestType;
-            setTest(prundedData);
-            setJsonData(data.data);
-        }
+        instance.get(`${process.env.REACT_APP_API_HOST}/tests/${testId}/`)
+            .then(res => {
+                setTest(res.data);
+                setJsonData(res.data.data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
 
     const handleChangeJson = (e: any) => {
@@ -69,51 +67,41 @@ const TestForm = ({ testId }: TestFormProps) => {
         setIsSuccesSave(false);
         setLoading(true);
         if (test?.id) {
-            const { error } = await supabase.from('tests')
-                .update({
-                    is_active: test.is_active,
-                    title_ru: test.title_ru,
-                    title_kk: test.title_kk,
-                    title_en: test.title_en,
-                    data: jsonData,
+            instance.put(`${process.env.REACT_APP_API_HOST}/tests/`, test)
+                .then(res => {
+                    setTest(res.data);
+                    setLoading(false);
+                    setIsError(false);
+                    setIsSuccesSave(true);
+                    setInterval(() => setIsSuccesSave(false), 3000);
+
                 })
-                .eq('id', test.id);
-            if (error) {
-                setLoading(false);
-                setErrors(error.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-                return;
-            }
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrors(err.message);
+                    setIsError(true);
+                    setIsSuccesSave(false);
+
+                })
         } else {
-            const { data, error } = await supabase.from('tests')
-                .insert({
-                    is_active: test.is_active,
-                    title_ru: test.title_ru,
-                    title_kk: test.title_kk,
-                    title_en: test.title_en,
-                    data: jsonData,
+            instance.post(`${process.env.REACT_APP_API_HOST}/tests/`, test)
+                .then(res => {
+                    setTest(res.data);
+                    newId = res.data.id;
+                    setLoading(false);
+                    setIsError(false);
+                    setIsSuccesSave(true);
+                    setInterval(() => setIsSuccesSave(false), 3000);
+                    navigate(`/tests/edit/${newId}`);
                 })
-                .select()
-                .single();
-            if (error) {
-                setLoading(false);
-                setErrors(error.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-                return;
-            }
-            if (data) {
-                setTest(data);
-                newId = data.id;
-            }
-        }
-        setLoading(false);
-        setIsError(false);
-        setIsSuccesSave(true);
-        setInterval(() => setIsSuccesSave(false), 3000);
-        if (newId) {
-            navigate(`/tests/edit/${newId}`);
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrors(err.message);
+                    setIsError(true);
+                    setIsSuccesSave(false);
+                })
         }
     }
 
@@ -123,7 +111,7 @@ const TestForm = ({ testId }: TestFormProps) => {
 
     return (
         <div className="p-5">
-            {roles.includes(UserRole.admin) || (roles.includes(UserRole.test_edit) && test.user_id === session?.user.id)
+            {roles.some(item => item.role in [UserRole.admin, UserRole.test_edit])
                 ? <form method="post" action="/item" className="mt-4">
                     <div className="flex flex-row justify-end py-4">
                         <Button

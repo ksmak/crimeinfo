@@ -1,11 +1,11 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { Detail, Field } from "../../../types/types";
+import { IDetail, Field } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 import { Button, Collapse, IconButton } from "@material-tailwind/react";
 import { AiFillDelete } from 'react-icons/ai';
 
 interface DetailsProps {
-    details: Detail[],
+    details: IDetail[],
     fields: Field[],
     handleAddDetail: (fieldName: string | undefined, value: string | undefined) => void,
     handleRemoveDetail: (index: number) => void,

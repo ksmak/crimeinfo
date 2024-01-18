@@ -1,29 +1,30 @@
 import { Alert, Button } from "@material-tailwind/react";
 import SelectField from "../elements/SelectField";
-import { Detail, Field, Item, Media, UserRole } from "../../../types/types";
-import { useContext, useEffect, useState } from "react";
+import { IDetail, Field, IItem, Media, UserRole } from "../../../types/types";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AuthContext, MetaDataContext } from "../../../App";
 import InputField from "../elements/InputField";
 import TextareaField from "../elements/TextareaField";
 import DetailsTable from "../elements/DetailsTable";
 import MediasTable from "../elements/MediaTable";
 import uuid from 'react-uuid';
-import { supabase } from "../../../api/supabase";
 import { useNavigate } from "react-router";
 import Loading from "../elements/Loading";
 import { getFileFromUrl, googleTranslate, uploadFiles } from "../../../utils/utils";
 import moment from "moment";
+import { useAuth } from "../../../lib/auth";
+import { useMeta } from "../../../lib/meta";
+import instance from "../../../api/instance";
 
 interface ItemViewProps {
     itemId: string | undefined
 }
 
 const ItemForm = ({ itemId }: ItemViewProps) => {
-    const { session, roles } = useContext(AuthContext);
+    const { roles } = useAuth();
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const { categories, regions, districts } = useContext(MetaDataContext);
+    const { categories, regions, districts } = useMeta();
     const [fields, setFields] = useState<Field[]>([]);
     const [detailError, setDetailError] = useState(false);
     const [photoError, setMediaError] = useState(false);
@@ -32,8 +33,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState('');
     const [medias, setMedias] = useState<Media[]>([]);
-    const [details, setDetails] = useState<Detail[]>([]);
-    const [item, setItem] = useState<Item>({
+    const [details, setDetails] = useState<IDetail[]>([]);
+    const [item, setItem] = useState<IItem>({
         id: null,
         is_active: false,
         is_reward: false,
@@ -55,7 +56,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         created_at: '',
         user_id: '',
         show_danger_label: false
-    } as Item);
+    } as IItem);
     const [openDetail, setOpenDetail] = useState(false);
 
     useEffect(() => {
@@ -74,27 +75,25 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
 
     const getItem = async () => {
         if (itemId) {
-            const { data } = await supabase
-                .from('item')
-                .select()
-                .or(`and(id.eq.${itemId},is_active.eq.true), and(id.eq.${itemId}${session?.user.id ? ', user_id.eq.' + session.user.id : ''})`)
-                .single();
-            if (data) {
-                const prunedData = data as Item;
-                setItem(prunedData);
-                getMedias(prunedData);
-                getDetails(prunedData);
-            }
+            instance.get(`${process.env.REACT_APP_API_HOST}/items/${itemId}/`)
+                .then(res => {
+                    setItem(res.data);
+                    getMedias(res.data);
+                    getDetails(res.data);
+                })
+                .catch(err => {
+                    console.log(err);
+                })
         }
     }
 
-    const getMedias = (item: Item) => {
+    const getMedias = (item: IItem) => {
         if (item?.data?.details) {
             setDetails(item.data.details);
         }
     }
 
-    const getDetails = async (item: Item) => {
+    const getDetails = async (item: IItem) => {
         if (item?.data?.photos) {
             let photosFromBase: Media[] = [];
             for (const url of item.data.photos) {
@@ -132,6 +131,12 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                 text_en = await googleTranslate('en', item.text_ru);
             }
         }
+        setItem({ ...item, punkt_kk: punkt_kk });
+        setItem({ ...item, punkt_en: punkt_en });
+        setItem({ ...item, title_kk: title_kk });
+        setItem({ ...item, title_en: title_en });
+        setItem({ ...item, text_kk: text_kk });
+        setItem({ ...item, text_en: text_en });
         const photo_path = item?.photo_path ? item.photo_path : `items/${uuid()}`;
         const { uploadError, urls } = await uploadFiles('crimeinfo_storage', photo_path, medias);
         if (uploadError) {
@@ -142,86 +147,44 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
             return;
         }
         if (item?.id) {
-            const { error } = await supabase.from('item')
-                .update({
-                    is_active: item.is_active,
-                    is_reward: item.is_reward,
-                    category_id: item.category_id,
-                    title_kk: title_kk,
-                    title_ru: item.title_ru,
-                    title_en: title_en,
-                    text_kk: text_kk,
-                    text_ru: item.text_ru,
-                    text_en: text_en,
-                    region_id: item.region_id,
-                    district_id: item.district_id,
-                    punkt_kk: punkt_kk,
-                    punkt_ru: item.punkt_ru,
-                    punkt_en: punkt_en,
-                    date_of_action: item.date_of_action,
-                    time_of_action: item.time_of_action,
-                    photo_path: photo_path,
-                    data: { details: details, photos: urls },
-                    show_danger_label: item.show_danger_label
+            instance.put(`${process.env.REACT_APP_API_HOST}/items/`, item)
+                .then(res => {
+                    setItem(res.data);
+                    setLoading(false);
+                    setIsError(false);
+                    setIsSuccesSave(true);
+                    setInterval(() => setIsSuccesSave(false), 3000);
                 })
-                .eq('id', item.id);
-            if (error) {
-                setLoading(false);
-                setErrors(error.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-                return;
-            }
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrors(err.message);
+                    setIsError(true);
+                    setIsSuccesSave(false);
+                })
         } else {
-            const { data, error } = await supabase.from('item')
-                .insert({
-                    is_active: item.is_active,
-                    is_reward: item.is_reward,
-                    category_id: item.category_id,
-                    title_kk: title_kk,
-                    title_ru: item.title_ru,
-                    title_en: title_en,
-                    text_kk: text_kk,
-                    text_ru: item.text_ru,
-                    text_en: text_en,
-                    region_id: item.region_id,
-                    district_id: item.district_id,
-                    punkt_kk: punkt_kk,
-                    punkt_ru: item.punkt_ru,
-                    punkt_en: punkt_en,
-                    date_of_action: item.date_of_action,
-                    time_of_action: item.time_of_action,
-                    photo_path: photo_path,
-                    data: { details: details, photos: urls },
-                    show_danger_label: item.show_danger_label
+            instance.post(`${process.env.REACT_APP_API_HOST}/items/`, item)
+                .then(res => {
+                    setItem(res.data);
+                    newId = res.data.id;
+                    setLoading(false);
+                    setIsError(false);
+                    setIsSuccesSave(true);
+                    setInterval(() => setIsSuccesSave(false), 3000);
+                    navigate(`/items/edit/${newId}`);
                 })
-                .select()
-                .single();
-            if (error) {
-                setLoading(false);
-                setErrors(error.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-                return;
-            }
-            if (data) {
-                setItem(data);
-                newId = data.id;
-            }
-        }
-        setLoading(false);
-        setIsError(false);
-        setIsSuccesSave(true);
-        setInterval(() => setIsSuccesSave(false), 3000);
-        if (newId) {
-            navigate(`/items/edit/${newId}`);
+                .catch(err => {
+                    setLoading(false);
+                    setErrors(err.message);
+                    setIsError(true);
+                    setIsSuccesSave(false);
+                })
         }
     }
 
     const handleClose = () => {
         navigate(-1);
     }
-
 
     const handleAddDetail = (fieldName: string | undefined, value: string | undefined) => {
         setDetailError(false);
@@ -267,7 +230,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
 
     return (
         <div className="p-5">
-            {roles.includes(UserRole.admin) || (roles.includes(UserRole.item_edit) && (item.id ? item.user_id === session?.user.id : true))
+            {roles.some(item => item.role in [UserRole.admin, UserRole.item_edit])
                 ? <form method="post" action="/item" className="mt-4">
                     <div className="flex flex-row justify-end py-4">
                         <Button

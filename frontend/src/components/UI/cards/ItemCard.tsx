@@ -1,5 +1,5 @@
 import { Carousel, IconButton } from "@material-tailwind/react";
-import { Dict, Item, Media } from "../../../types/types";
+import { IDict, IItem, Media } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import moment from "moment";
@@ -9,9 +9,9 @@ import uuid from "react-uuid";
 
 
 interface ItemCardProps {
-    item: Item,
-    regions: Dict[] | undefined,
-    districts: Dict[] | undefined,
+    item: IItem,
+    regions: IDict[] | undefined,
+    districts: IDict[] | undefined,
 }
 
 const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
@@ -22,7 +22,7 @@ const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
         getMedias(item);
     }, [item])
 
-    const getMedias = async (item: Item) => {
+    const getMedias = async (item: IItem) => {
         if (item?.data?.photos) {
             let photosFromBase: Media[] = [];
             for (const url of item.data.photos) {

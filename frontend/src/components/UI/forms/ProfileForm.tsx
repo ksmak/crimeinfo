@@ -1,22 +1,22 @@
 import { Alert, Button } from "@material-tailwind/react";
-import { Media, Profile } from "../../../types/types";
+import { Media, IProfile } from "../../../types/types";
 import { useNavigate } from "react-router";
-import { useContext, useEffect, useState } from "react";
-import { supabase } from "../../../api/supabase";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Loading from "../elements/Loading";
 import InputField from "../elements/InputField";
 import uuid from "react-uuid";
 import { getFileFromUrl, uploadFiles } from "../../../utils/utils";
-import { AuthContext } from "../../../App";
+import { useAuth } from "../../../lib/auth";
+import instance from "../../../api/instance";
 interface ProfileFormProps {
     userId: string
 }
 const ProfileForm = ({ userId }: ProfileFormProps) => {
-    const auth = useContext(AuthContext);
+    const { user } = useAuth();
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const [profile, setProfile] = useState<Profile>({});
+    const [profile, setProfile] = useState<IProfile>({});
     const [isSuccesSave, setIsSuccesSave] = useState(false);
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -30,30 +30,22 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
     }, [userId]);
 
     const getProfile = async (userId: string) => {
-        const { data } = await supabase
-            .from('profiles')
-            .select(`
-                id,
-                username,
-                full_name,
-                avatar_url
-            `)
-            .eq('id', userId)
-            .single();
-        if (data) {
-            const prunedData = data as Profile;
-            setProfile(prunedData);
-            if (prunedData.avatar_url) {
-                let photosFromBase: Media[] = [];
-                const id = uuid();
-                const file = await getFileFromUrl(prunedData.avatar_url, id);
-                photosFromBase.push({
-                    id: id,
-                    file: file
-                })
-                setPhotos(photosFromBase);
-            }
-        }
+        instance.get(`${process.env.REACT_APP_HOST}/users/${userId}`)
+            .then(res => {
+                setProfile(res.data);
+                if (res.data.avatar) {
+                    let photosFromBase: Media[] = [];
+                    const id = uuid();
+                    getFileFromUrl(res.data.avatar, id)
+                        .then(file => {
+                            photosFromBase.push({
+                                id: id,
+                                file: file
+                            })
+                            setPhotos(photosFromBase);
+                        })
+                }
+            })
     }
 
     const handleSave = async () => {
@@ -70,42 +62,38 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
             return;
         }
         if (profile.id) {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    username: profile.username,
-                    full_name: profile.full_name,
-                    avatar_url: urls[0]
+            instance.put(`${process.env.REACT_APP_API_HOST}/users/`, profile)
+                .then(res => {
+                    setProfile(res.data);
+                    setLoading(false);
+                    setIsError(false);
+                    setIsSuccesSave(true);
+                    setInterval(() => setIsSuccesSave(false), 3000);
                 })
-                .eq('id', userId);
-            if (error) {
-                setLoading(false);
-                setErrors(error.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-                return;
-            }
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrors(err.message);
+                    setIsError(true);
+                    setIsSuccesSave(false);
+                })
         } else {
-            const { error } = await supabase
-                .from('profiles')
-                .insert({
-                    id: userId,
-                    username: profile.username,
-                    full_name: profile.full_name,
-                    avatar_url: urls[0]
+            instance.post(`${process.env.REACT_APP_API_HOST}/users/`, profile)
+                .then(res => {
+                    setProfile(res.data);
+                    setLoading(false);
+                    setIsError(false);
+                    setIsSuccesSave(true);
+                    setInterval(() => setIsSuccesSave(false), 3000);
                 })
-            if (error) {
-                setLoading(false);
-                setErrors(error.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-                return;
-            }
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                    setErrors(err.message);
+                    setIsError(true);
+                    setIsSuccesSave(false);
+                })
         }
-        setLoading(false);
-        setIsError(false);
-        setIsSuccesSave(true);
-        setInterval(() => setIsSuccesSave(false), 3000);
     }
 
     const handleClose = () => {
@@ -185,7 +173,7 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
                                 type='text'
                                 name='email'
                                 label={t('yourEmail')}
-                                value={String(auth.session?.user.email)}
+                                value={user ? user.email : ''}
                                 onChange={() => null}
                                 required={false}
                             />

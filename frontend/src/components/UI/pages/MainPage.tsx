@@ -90,11 +90,8 @@ const MainPage = () => {
                 <hr className="bg-blue-gray-50 shadow-md shadow-blue-gray-100 h-5 w-full" />
             </div>
             <div className="text-end sticky bottom-5 mr-10">
-                {isAuthenticated && (
-                    roles.some(item => item.role == UserRole.admin) ||
-                    roles.some(item => item.role == UserRole.item_edit) ||
-                    roles.some(item => item.role == UserRole.info_edit) ||
-                    roles.some(item => item.role == UserRole.test_edit))
+                {isAuthenticated &&
+                    roles.some(item => item.role in [UserRole.admin, UserRole.item_edit, UserRole.info_edit, UserRole.test_edit])
                     ? <ActionsPanel actions={actions} />
                     : null}
             </div>

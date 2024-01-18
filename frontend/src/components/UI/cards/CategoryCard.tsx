@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { Category } from "../../../types/types";
+import { ICategory } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 
 interface CategoryProps {
-    category: Category
+    category: ICategory
 }
 
 const CategoryCard = ({ category }: CategoryProps) => {

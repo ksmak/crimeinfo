@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
-import { Dict } from "../../../types/types"
+import { IDict } from "../../../types/types"
 import { ChangeEvent } from "react";
 
 interface SelectProps {
     name: string,
     label: string,
     value: string,
-    dict: Dict[] | undefined,
+    dict: IDict[] | undefined,
     onChange: (e: ChangeEvent<HTMLSelectElement>) => void,
     required: boolean
 }

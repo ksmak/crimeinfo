@@ -1,5 +1,5 @@
 import { Carousel, IconButton } from "@material-tailwind/react";
-import { Info } from "../../../types/types";
+import { IInfo } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 import { ContentState, EditorState } from "draft-js";
 import htmlToDraft from "html-to-draftjs";
@@ -8,7 +8,7 @@ import { truncate } from "../../../utils/utils";
 import { useEffect, useState } from "react";
 
 interface InfoCardProps {
-    info: Info,
+    info: IInfo,
 }
 
 const InfoCard = ({ info }: InfoCardProps) => {

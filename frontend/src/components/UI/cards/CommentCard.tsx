@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import moment from "moment";
 import { AiFillDelete } from "react-icons/ai";
 import { useAuth } from "../../../lib/auth";
+import axios from "axios";
 
 interface CommentCardProps {
     comment: IComment,
@@ -12,19 +13,18 @@ interface CommentCardProps {
 }
 
 const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
-    const auth = useAuth();
+    const { user } = useAuth();
     const { t, i18n } = useTranslation();
     const [profile, setProfile] = useState<IProfile>();
 
-    const getUserProfile = async (user_id: string) => {
-        const { data } = await supabase
-            .from('profiles')
-            .select()
-            .eq('id', user_id)
-            .single()
-        if (data) {
-            setProfile(data);
-        }
+    const getUserProfile = async (userId: string) => {
+        axios.get(`${process.env.REACT_APP_API_HOST}/users/${userId}/`)
+            .then(res => {
+                setProfile(res.data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
     useEffect(() => {
         if (comment.user_id) {
@@ -50,7 +50,7 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
                 <div className="text-sm font-normal">{comment.text}</div>
             </div>
             <div className="w-10 justify-self-end self-center">
-                {comment.user_id === auth.session?.user.id
+                {comment.user_id === user?.id
                     ? <IconButton
                         className="rounded-full"
                         size="sm"

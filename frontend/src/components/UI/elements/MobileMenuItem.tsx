@@ -1,13 +1,13 @@
 import { Button, Collapse } from "@material-tailwind/react"
 import { Dispatch, SetStateAction } from "react"
 import { BsChevronDown } from "react-icons/bs"
-import { Category, Info, Site, TestType } from "../../../types/types"
+import { ICategory, IInfo, ISite, ITest } from "../../../types/types"
 import { useTranslation } from "react-i18next"
 
 type MobileMenuItemProps = {
     open: boolean,
     setOpen: Dispatch<SetStateAction<boolean>>,
-    items: Category[] | Site[] | TestType[] | Info[] | undefined,
+    items: ICategory[] | ISite[] | ITest[] | IInfo[] | undefined,
     title: string,
 }
 

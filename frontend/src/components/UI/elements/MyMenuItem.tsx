@@ -2,13 +2,13 @@ import { Button, Menu, MenuHandler, MenuItem, MenuList, Typography } from "@mate
 import { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 import { BsChevronDown } from "react-icons/bs";
-import { Category, Info, Site, TestType } from "../../../types/types";
+import { ICategory, IInfo, ISite, ITest } from "../../../types/types";
 import { Link } from "react-router-dom";
 
 type MyMenuItemProps = {
     open: boolean,
     setOpen: Dispatch<SetStateAction<boolean>>,
-    items: Category[] | Site[] | TestType[] | Info[] | undefined,
+    items: ICategory[] | ISite[] | ITest[] | IInfo[] | undefined,
     title: string,
 }
 
