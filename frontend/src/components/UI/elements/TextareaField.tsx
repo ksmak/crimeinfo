@@ -6,7 +6,7 @@ interface TextareaFieldProps {
     label: string,
     value: string,
     onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void,
-    required: boolean
+    required: boolean,
 }
 
 const TextareaField = ({ rows, name, label, value, onChange, required }: TextareaFieldProps) => {

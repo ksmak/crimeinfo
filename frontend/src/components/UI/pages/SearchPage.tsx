@@ -81,8 +81,8 @@ const SearchPage = () => {
                         let flag = false;
                         for (let i = 0; i < filterDetails.length; i++) {
                             flag = false;
-                            if (item.data?.details && item.data.details.length) {
-                                const itemDetails = item.data.details;
+                            if (item.details && item.details.length) {
+                                const itemDetails = item.details;
                                 for (let j = 0; j < itemDetails.length; j++) {
                                     if (itemDetails[j].field_name === filterDetails[i].field_name) {
                                         if (itemDetails[j].value.toLowerCase().includes(filterDetails[i].value.toLowerCase())) {

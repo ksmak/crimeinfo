@@ -1,5 +1,5 @@
 import { Alert, Badge, Button, Card, CardBody, Carousel, Chip, IconButton, Typography } from "@material-tailwind/react";
-import { IComment, IDetail, IItem, Media, UserRole } from "../../../types/types";
+import { IApiError, IComment, IDetail, IItem, Media, UserRole } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 import 'moment/locale/ru';
@@ -46,11 +46,9 @@ const ItemView = ({ itemId }: ItemViewProps) => {
         punkt_en: null,
         date_of_action: moment().format('YYYY-MM-DD'),
         time_of_action: moment().format('HH:MM'),
-        data: null,
-        created_user: '',
-        change_user: '',
-        date_of_creation: '',
-        date_of_change: '',
+        details: null,
+        created_user: null,
+        change_user: null,
         show_danger_label: false
     } as IItem);
     const [comments, setComments] = useState<IComment[]>([]);
@@ -67,26 +65,24 @@ const ItemView = ({ itemId }: ItemViewProps) => {
         // eslint-disable-next-line
     }, [itemId]);
 
-    const getItem = (itemId: string) => {
-        axios.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`)
-            .then(res => {
-                setItem(res.data);
-                setComment({ item_id: res.data.id });
-                if (res.data?.data?.photos) {
-                    let photosFromBase: Media[] = [];
-                    for (const url of res.data.data.photos) {
-                        const id = uuid();
-                        getFileFromUrl(url, id)
-                            .then(file => {
-                                photosFromBase.push({
-                                    id: id,
-                                    file: file,
-                                })
-                            })
-                    }
-                    setMedias(photosFromBase);
+    const getItem = async (itemId: string) => {
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`);
+            setItem(res.data);
+            setComment({ item_id: res.data.id });
+            if (res.data.files) {
+                let files: Media[] = [];
+                for (const f of res.data.files) {
+                    const id = uuid();
+                    const file = await getFileFromUrl(f.file, id);
+                    files.push({ file: file });
                 }
-            })
+                setMedias(files);
+            }
+        } catch (error) {
+            const err = error as IApiError;
+            console.log(err);
+        }
     }
 
     const getComments = (itemId: string) => {
@@ -121,7 +117,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
     const title = item[`title_${i18n.language}` as keyof typeof item] as string;
     const place_info = getPlaceInfo();
     const text = item[`text_${i18n.language}` as keyof typeof item] as string;
-    const date_add = `${t('dateAdd')}: ${moment(item.date_of_creation).locale(i18n.language).format('LL')}`;
+    const date_add = `${t('dateAdd')}: ${moment(item.date_of_action).locale(i18n.language).format('LL')}`;
 
     const handleAddComment = async () => {
         if (!isAuthenticated) {
@@ -233,8 +229,8 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                             <div className="text-blue-gray-800">{text}</div>
                             <Typography variant="h6" color="blue" className="uppercase mt-4">{t('details')}</Typography>
                             <div className="flex flex-row flex-wrap gap-2">
-                                {item.data?.details
-                                    ? item.data.details.map((detail, index) => {
+                                {item.details
+                                    ? item.details.map((detail, index) => {
                                         let category = categories?.find(category => category.id === item.category);
                                         let field = category?.fields.find(field => field.field_name === detail.field_name);
                                         let title = field ? field[`title_${i18n.language}` as keyof typeof field] as string : '';

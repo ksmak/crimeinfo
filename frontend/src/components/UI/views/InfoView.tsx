@@ -2,7 +2,7 @@ import { Button, Card, CardBody, CardHeader, Carousel, IconButton, Typography } 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { IInfo, Media, UserRole } from "../../../types/types";
+import { IApiError, IInfo, Media, UserRole } from "../../../types/types";
 import moment from "moment";
 import { ContentState, EditorState } from "draft-js";
 import htmlToDraft from "html-to-draftjs";
@@ -31,8 +31,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
         text_ru: null,
         text_en: null,
         date_of_action: moment().format('YYYY-MM-DD'),
-        data: null,
-        photo_path: null
+        files: [],
     } as IInfo);
     const [medias, setMedias] = useState<Media[]>([]);
 
@@ -41,26 +40,23 @@ const InfoView = ({ infoId }: InfoViewProps) => {
         // eslint-disable-next-line
     }, [infoId]);
 
-    const getInfo = () => {
+    const getInfo = async () => {
         if (infoId) {
-            axios.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}/`)
-                .then(res => {
-                    setInfo(res.data);
-                    if (res.data?.data?.photos) {
-                        let photosFromBase: Media[] = [];
-                        for (const url of res.data.data.photos) {
-                            const id = uuid();
-                            getFileFromUrl(url, id)
-                                .then(file => {
-                                    photosFromBase.push({
-                                        id: id,
-                                        file: file,
-                                    })
-                                })
-                        }
-                        setMedias(photosFromBase);
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}/`)
+                setInfo(res.data);
+                if (res.data.files) {
+                    let files: Media[] = [];
+                    for (const f of res.data.files) {
+                        const file = await getFileFromUrl(f.file);
+                        files.push({ file: file });
                     }
-                })
+                    setMedias(files);
+                }
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+            }
         }
     }
 

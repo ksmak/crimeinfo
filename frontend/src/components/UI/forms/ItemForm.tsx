@@ -1,10 +1,9 @@
 import { Alert, Button } from "@material-tailwind/react";
 import SelectField from "../elements/SelectField";
-import { IDetail, Field, IItem, Media, UserRole } from "../../../types/types";
-import React, { ReactEventHandler, ReactHTMLElement, useEffect, useState } from "react";
+import { IDetail, Field, IItem, Media, UserRole, IApiError } from "../../../types/types";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InputField from "../elements/InputField";
-import TextareaField from "../elements/TextareaField";
 import DetailsTable from "../elements/DetailsTable";
 import MediasTable from "../elements/MediaTable";
 import uuid from 'react-uuid';
@@ -21,7 +20,7 @@ interface ItemViewProps {
 }
 
 const ItemForm = ({ itemId }: ItemViewProps) => {
-    const { roles } = useAuth();
+    const { user, roles } = useAuth();
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
     const { categories, regions, districts } = useMeta();
@@ -52,12 +51,11 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         punkt_en: null,
         date_of_action: moment().format('YYYY-MM-DD'),
         time_of_action: moment().format('HH:MM'),
-        data: null,
-        created_user: '',
-        change_user: '',
-        date_of_creation: '',
-        date_of_change: '',
-        show_danger_label: false
+        details: null,
+        created_user: null,
+        change_user: null,
+        show_danger_label: false,
+        files: []
     } as IItem);
     const [openDetail, setOpenDetail] = useState(false);
 
@@ -77,46 +75,72 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
 
     const getItem = async () => {
         if (itemId) {
-            instance.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`)
-                .then(res => {
-                    setItem(res.data);
-                    getMedias(res.data);
-                    getDetails(res.data);
-                })
-                .catch(err => {
-                    console.log(err);
-                })
+            try {
+                const res = await instance.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`);
+                setItem(res.data);
+                getDetails(res.data);
+                getMedias(res.data);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+            }
         }
     }
 
-    const getMedias = (item: IItem) => {
-        if (item?.data?.details) {
-            setDetails(item.data.details);
+    const getDetails = (item: IItem) => {
+        if (item?.details) {
+            setDetails(item.details);
         }
     }
 
-    const getDetails = async (item: IItem) => {
-        if (item?.data?.photos) {
-            let photosFromBase: Media[] = [];
-            for (const url of item.data.photos) {
+    const getMedias = async (item: IItem) => {
+        if (item?.files) {
+            let files: Media[] = [];
+            for (const f of item.files) {
                 const id = uuid();
-                const file = await getFileFromUrl(url, id);
-                photosFromBase.push({
-                    id: id,
+                const file = await getFileFromUrl(f.file, id);
+                files.push({
                     file: file,
                 })
             }
-            setMedias(photosFromBase);
+            setMedias(files);
         }
     }
 
-    const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
+    const validateForm = (item: IItem): boolean => {
+        if (!item.category || !item.punkt_kk || !item.punkt_ru || !item.punkt_en) {
+            return true;
+        }
+        return false;
+    }
+
+    const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         let newId = '';
         setErrors('');
         setIsError(false);
         setIsSuccesSave(false);
         setLoading(true);
+        let payload = { ...item };
+        payload.details = [...details];
+        //init text
+        let txt = [];
+        txt.push(moment(payload.date_of_action).locale(i18n.language).format('LL'));
+        txt.push(`${payload.time_of_action} часов`);
+        if (payload.show_danger_label) {
+            txt.push('похищен');
+        } else {
+            txt.push('утерян');
+        }
+        txt.push(payload.title_ru)
+        details.forEach(d => {
+            fields.forEach(f => {
+                if (f.field_name === d.field_name) {
+                    txt.push(`, ${f.title_ru} ${d.value}`);
+                }
+            });
+        });
+        payload.text_ru = txt.join(' ');
         //translate
         let title_kk = item.title_kk;
         let title_en = item.title_en;
@@ -134,55 +158,58 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                 text_en = await googleTranslate('en', item.text_ru);
             }
         }
-        setItem({ ...item, punkt_kk: punkt_kk });
-        setItem({ ...item, punkt_en: punkt_en });
-        setItem({ ...item, title_kk: title_kk });
-        setItem({ ...item, title_en: title_en });
-        setItem({ ...item, text_kk: text_kk });
-        setItem({ ...item, text_en: text_en });
-        //upload media
-        // const photo_path = item?.photo_path ? item.photo_path : `items/${uuid()}`;
-        // const { uploadError, urls } = await uploadFiles('crimeinfo_storage', photo_path, medias);
-        // if (uploadError) {
-        //     setLoading(false);
-        //     setErrors(uploadError.message);
-        //     setIsError(true);
-        //     setIsSuccesSave(false);
-        //     return;
-        // }
-        if (item?.id) {
-            instance.post(`${process.env.REACT_APP_API_HOST}/api/items/`, item)
-                .then(res => {
-                    setItem(res.data);
-                    setLoading(false);
-                    setIsError(false);
-                    setIsSuccesSave(true);
-                    setInterval(() => setIsSuccesSave(false), 3000);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                    setErrors(err.message);
-                    setIsError(true);
-                    setIsSuccesSave(false);
-                })
+        payload.punkt_kk = punkt_kk;
+        payload.punkt_en = punkt_en;
+        payload.title_kk = title_kk;
+        payload.title_en = title_en;
+        payload.text_kk = text_kk;
+        payload.text_en = text_en;
+        //validate
+        if (validateForm(payload)) {
+            setLoading(false);
+            setErrors('Не все поля заполнены!');
+            setIsError(true);
+            setIsSuccesSave(false);
+            return;
+        }
+        if (payload.id) {
+            payload.change_user = user?.id ? user.id : null;
+            try {
+                const res = await instance.put<IItem>(`${process.env.REACT_APP_API_HOST}/api/items/${item.id}/`, payload);
+                setItem(res.data);
+                await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/items/${item.id}/upload_files/`, medias);
+                setLoading(false);
+                setIsError(false);
+                setIsSuccesSave(true);
+                setInterval(() => setIsSuccesSave(false), 3000);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+                setLoading(false);
+                setErrors(err.message);
+                setIsError(true);
+                setIsSuccesSave(false);
+            }
         } else {
-            instance.post(`${process.env.REACT_APP_API_HOST}/api/items/`, item)
-                .then(res => {
-                    setItem(res.data);
-                    newId = res.data.id;
-                    setLoading(false);
-                    setIsError(false);
-                    setIsSuccesSave(true);
-                    setInterval(() => setIsSuccesSave(false), 3000);
-                    navigate(`/items/edit/${newId}`);
-                })
-                .catch(err => {
-                    setLoading(false);
-                    setErrors(err.message);
-                    setIsError(true);
-                    setIsSuccesSave(false);
-                })
+            payload.created_user = user?.id ? user.id : null;
+            try {
+                const res = await instance.post(`${process.env.REACT_APP_API_HOST}/api/items/`, payload);
+                setItem(res.data);
+                newId = res.data.id;
+                await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/items/${newId}/upload_files/`, medias);
+                setLoading(false);
+                setIsError(false);
+                setIsSuccesSave(true);
+                setInterval(() => setIsSuccesSave(false), 3000);
+                navigate(`/items/edit/${newId}`);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+                setLoading(false);
+                setErrors(err.message);
+                setIsError(true);
+                setIsSuccesSave(false);
+            }
         }
     }
 
@@ -217,8 +244,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                 const file = files[0];
                 const type = file.type.replace(/\/.+/, '');
                 if (type === 'image' || type === 'video') {
-                    const file_id = uuid()
-                    setMedias([...medias, { id: file_id, file: file }]);
+                    setMedias([...medias, { file: file }]);
                 }
             }
         };
@@ -235,12 +261,12 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
     return (
         <div className="p-5">
             {roles.some(item => item.role === UserRole.admin || item.role === UserRole.item_edit)
-                ? <form method="post" action="/item" className="mt-4">
+                ? <form onSubmit={handleSave} className="mt-4">
                     <div className="flex flex-row justify-end py-4">
                         <Button
                             className="bg-blue-400 mr-4"
                             size="sm"
-                            onClick={handleSave}
+                            type="submit"
                         >
                             {t('save')}
                         </Button>
@@ -294,16 +320,6 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                                     required={true}
                                 />
                             </div>
-                            <div className="w-full bg-white mb-4">
-                                <TextareaField
-                                    rows={7}
-                                    name='text_kk'
-                                    label={t('text_kk')}
-                                    value={item.text_kk ? item.text_kk : ''}
-                                    onChange={(e) => setItem({ ...item, text_kk: e.target.value })}
-                                    required={true}
-                                />
-                            </div>
                         </div>
                         : i18n.language === 'ru'
                             ? <div>
@@ -314,16 +330,6 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                                         label={t('title_ru')}
                                         value={item.title_ru ? item.title_ru : ''}
                                         onChange={(e) => setItem({ ...item, title_ru: e.target.value })}
-                                        required={true}
-                                    />
-                                </div>
-                                <div className="w-full bg-white mb-4">
-                                    <TextareaField
-                                        rows={7}
-                                        name='text_ru'
-                                        label={t('text_ru')}
-                                        value={item.text_ru ? item.text_ru : ''}
-                                        onChange={(e) => setItem({ ...item, text_ru: e.target.value })}
                                         required={true}
                                     />
                                 </div>
@@ -340,50 +346,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                                             required={true}
                                         />
                                     </div>
-                                    <div className="w-full bg-white mb-4">
-                                        <TextareaField
-                                            rows={7}
-                                            name='text_en'
-                                            label={t('text_en')}
-                                            value={item.text_en ? item.text_en : ''}
-                                            onChange={(e) => setItem({ ...item, text_en: e.target.value })}
-                                            required={true}
-                                        />
-                                    </div>
                                 </div>
                                 : null}
-                    <div className="mb-4 w-fit">
-                        <label
-                            htmlFor="show_danger_label"
-                            className="text-blue-400 bold mr-1"
-                        >
-                            {t('showDangerLabel')}
-                        </label>
-                        <input
-                            id="show_danger_label"
-                            type='checkbox'
-                            name='show_danger_label'
-                            checked={item.show_danger_label}
-                            onChange={(e) => setItem({ ...item, show_danger_label: !item.show_danger_label })}
-                            required={true}
-                        />
-                    </div>
-                    <div className="mb-4 w-fit">
-                        <label
-                            htmlFor="is_reward"
-                            className="text-blue-400 bold mr-1"
-                        >
-                            {t('reward')}
-                        </label>
-                        <input
-                            id="is_reward"
-                            type='checkbox'
-                            name='is_reward'
-                            checked={item.is_reward}
-                            onChange={(e) => setItem({ ...item, is_reward: !item.is_reward })}
-                            required={true}
-                        />
-                    </div>
                     <div className="w-44 bg-white mb-4">
                         <InputField
                             type='date'
@@ -421,7 +385,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                             value={String(item.district)}
                             dict={districts}
                             onChange={(e) => setItem({ ...item, district: Number(e.target.value) })}
-                            required={true}
+                            required={false}
                         />
                     </div>
                     {i18n.language === 'kk'
@@ -464,7 +428,94 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                                     </div>
                                 </div>
                                 : null}
-
+                    <div className="mb-4 w-fit">
+                        <label
+                            htmlFor="show_danger_label"
+                            className="text-blue-400 bold mr-1"
+                        >
+                            {t('showDangerLabel')}
+                        </label>
+                        <input
+                            id="show_danger_label"
+                            type='checkbox'
+                            name='show_danger_label'
+                            checked={item.show_danger_label}
+                            onChange={(e) => setItem({ ...item, show_danger_label: !item.show_danger_label })}
+                        />
+                    </div>
+                    <div className="mb-4 w-fit">
+                        <label
+                            htmlFor="is_reward"
+                            className="text-blue-400 bold mr-1"
+                        >
+                            {t('reward')}
+                        </label>
+                        <input
+                            id="is_reward"
+                            type='checkbox'
+                            name='is_reward'
+                            checked={item.is_reward}
+                            onChange={(e) => setItem({ ...item, is_reward: !item.is_reward })}
+                        />
+                    </div>
+                    {i18n.language === 'kk'
+                        ? <div>
+                            <div className="w-full bg-white mb-4">
+                                <label
+                                    htmlFor="text_kk"
+                                    className="text-blue-400 bold mr-1"
+                                >
+                                    {t('text_kk')}
+                                </label>
+                                <textarea
+                                    className="border-2 w-full border-blue-gray-200 rounded-md p-2"
+                                    id="text_kk"
+                                    rows={7}
+                                    name='text_kk'
+                                    value={item.text_kk ? item.text_kk : ''}
+                                    readOnly={true}
+                                />
+                            </div>
+                        </div>
+                        : i18n.language === 'ru'
+                            ? <div>
+                                <div className="w-full bg-white mb-4">
+                                    <label
+                                        htmlFor="text_ru"
+                                        className="text-blue-400 bold mr-1"
+                                    >
+                                        {t('text_ru')}
+                                    </label>
+                                    <textarea
+                                        className="border-2 w-full border-blue-gray-200 rounded-md p-2"
+                                        id="text_ru"
+                                        rows={7}
+                                        name='text_ru'
+                                        value={item.text_ru ? item.text_ru : ''}
+                                        readOnly={true}
+                                    />
+                                </div>
+                            </div>
+                            : i18n.language === 'en'
+                                ? <div>
+                                    <div className="w-full bg-white mb-4">
+                                        <label
+                                            htmlFor="text_en"
+                                            className="text-blue-400 bold mr-1"
+                                        >
+                                            {t('text_en')}
+                                        </label>
+                                        <textarea
+                                            className="border-2 w-full border-blue-gray-200 rounded-md p-2"
+                                            id="text_en"
+                                            rows={7}
+                                            name='text_en'
+                                            value={item.text_en ? item.text_en : ''}
+                                            readOnly={true}
+                                        />
+                                    </div>
+                                </div>
+                                : null}
                     <div className="w-full bg-white mb-4">
                         <DetailsTable
                             details={details}

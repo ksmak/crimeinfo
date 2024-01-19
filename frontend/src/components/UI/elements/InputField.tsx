@@ -24,8 +24,8 @@ const InputField = ({ type, name, label, value, onChange, required }: InputField
                 type={type}
                 value={value}
                 onChange={onChange}
-                required={required}
             />
+            <div className="text-red-500 text-sm">{required && !value ? 'Поле обязательно для заполнения' : null}</div>
         </div>
     )
 }

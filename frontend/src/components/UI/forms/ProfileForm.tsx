@@ -1,5 +1,5 @@
 import { Alert, Button } from "@material-tailwind/react";
-import { Media, IProfile } from "../../../types/types";
+import { Media, IProfile, IApiError } from "../../../types/types";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,7 +21,7 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState('');
-    const [photos, setPhotos] = useState<Media[]>([]);
+    const [avatar, setAvatar] = useState<Media>();
 
     useEffect(() => {
         if (userId) {
@@ -30,22 +30,18 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
     }, [userId]);
 
     const getProfile = async (userId: string) => {
-        instance.get(`${process.env.REACT_APP_HOST}/users/${userId}`)
-            .then(res => {
-                setProfile(res.data);
-                if (res.data.avatar) {
-                    let photosFromBase: Media[] = [];
-                    const id = uuid();
-                    getFileFromUrl(res.data.avatar, id)
-                        .then(file => {
-                            photosFromBase.push({
-                                id: id,
-                                file: file
-                            })
-                            setPhotos(photosFromBase);
-                        })
-                }
-            })
+        try {
+            const res = await instance.get(`${process.env.REACT_APP_HOST}/users/${userId}`);
+            setProfile(res.data);
+            if (res.data.avatar) {
+                const file = await getFileFromUrl(res.data.avatar);
+                setAvatar({ file: file });
+            }
+        } catch (error) {
+            const err = error as IApiError;
+            console.log(err);
+
+        }
     }
 
     const handleSave = async () => {
@@ -53,46 +49,38 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
         setIsError(false);
         setIsSuccesSave(false);
         setLoading(true);
-        const { uploadError, urls } = await uploadFiles('avatars', userId, photos);
-        if (uploadError) {
-            setLoading(false);
-            setErrors(uploadError.message);
-            setIsError(true);
-            setIsSuccesSave(false);
-            return;
-        }
         if (profile.id) {
-            instance.put(`${process.env.REACT_APP_API_HOST}/users/`, profile)
-                .then(res => {
-                    setProfile(res.data);
-                    setLoading(false);
-                    setIsError(false);
-                    setIsSuccesSave(true);
-                    setInterval(() => setIsSuccesSave(false), 3000);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                    setErrors(err.message);
-                    setIsError(true);
-                    setIsSuccesSave(false);
-                })
+            try {
+                const res = await instance.put(`${process.env.REACT_APP_API_HOST}/users/`, profile);
+                setProfile(res.data);
+                setLoading(false);
+                setIsError(false);
+                setIsSuccesSave(true);
+                setInterval(() => setIsSuccesSave(false), 3000);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+                setLoading(false);
+                setErrors(err.message);
+                setIsError(true);
+                setIsSuccesSave(false);
+            }
         } else {
-            instance.post(`${process.env.REACT_APP_API_HOST}/users/`, profile)
-                .then(res => {
-                    setProfile(res.data);
-                    setLoading(false);
-                    setIsError(false);
-                    setIsSuccesSave(true);
-                    setInterval(() => setIsSuccesSave(false), 3000);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                    setErrors(err.message);
-                    setIsError(true);
-                    setIsSuccesSave(false);
-                })
+            try {
+                const res = await instance.post(`${process.env.REACT_APP_API_HOST}/users/`, profile);
+                setProfile(res.data);
+                setLoading(false);
+                setIsError(false);
+                setIsSuccesSave(true);
+                setInterval(() => setIsSuccesSave(false), 3000);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+                setLoading(false);
+                setErrors(err.message);
+                setIsError(true);
+                setIsSuccesSave(false);
+            }
         }
     }
 
@@ -108,8 +96,7 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
             const files = (e.target as HTMLInputElement).files;
             if (e.target && files) {
                 const file = files[0];
-                const file_id = uuid();
-                setPhotos([{ id: file_id, file: file }]);
+                setAvatar({ file: file });
             }
         };
         input.click();
@@ -147,10 +134,10 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
                 <div className="w-full mb-4 flex flex-row flex-wrap">
                     <div className="flex flex-col justify-center items-center">
                         <div className="w-32 h-32 mb-4 border-2 border-blue-gray-50 rounded-sm">
-                            {photos.length
+                            {avatar
                                 ? <img
                                     className="w-full h-full border-2 border-blue-gray-100 rounded-lg"
-                                    src={photos.length ? URL.createObjectURL(photos[0].file) : 'default_avatar.png'}
+                                    src={URL.createObjectURL(avatar.file)}
                                     alt="avatar"
                                 />
                                 : null}

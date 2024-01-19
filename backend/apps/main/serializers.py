@@ -49,14 +49,14 @@ class ItemFileSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = ItemFile
-        fields = '__all__'
+        fields = ('item', 'file')
 
 
 class ItemSerializer(serializers.ModelSerializer):
     """
     Item serializer.
     """
-    files = ItemFileSerializer(many=True)
+    files = ItemFileSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = Item

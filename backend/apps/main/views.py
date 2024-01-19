@@ -4,8 +4,10 @@ from django.db.models import Count
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import ListAPIView
-from rest_framework.decorators import action
+from rest_framework.decorators import action, parser_classes
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
 from .serializers import (
     CategorySerializer,
@@ -29,6 +31,7 @@ from .models import (
     Region,
     District,
     Item,
+    ItemFile,
     Info,
     UserRole,
     Comment,
@@ -74,9 +77,10 @@ class ItemViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = None
         if self.request.user.is_authenticated:
-            c1 = Q(create_user=self.request.user)
-            c2 = Q(change_user=self.request.user)
-            queryset = Item.objects.filter(c1 | c2)
+            c1 = Q(create_user=self.request.user.id)
+            c2 = Q(change_user=self.request.user.id)
+            c3 = Q(is_active=True)
+            queryset = Item.objects.filter(c1 | c2 | c3)
         else:
             queryset = Item.objects.filter(is_active=True)
         searchText = self.request.query_params.get('searchText')
@@ -129,6 +133,29 @@ class ItemViewSet(ModelViewSet):
         result = Item.objects.values(
             'category').annotate(cnt=Count('category'))
         return Response(result)
+
+    @action(detail=True, methods=('post', ))
+    @parser_classes((MultiPartParser, FormParser))
+    def upload_files(self, request, pk=None):
+        item = None
+        try:
+            item = Item.objects.get(pk=pk)
+        except:
+            print('Error item not found.')
+
+        if item is None:
+            return Response({
+                'errors': 'Item not found.'
+            }, HTTP_404_NOT_FOUND)
+
+        item.files.all().delete()
+        for file in self.request.data.getlist('files'):
+            mf = ItemFile.objects.create(item=item, file=file)
+            item.files.add(mf)
+
+        return Response({
+            'ok'
+        }, HTTP_200_OK)
 
 
 class InfoViewSet(ModelViewSet):

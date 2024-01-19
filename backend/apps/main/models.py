@@ -62,7 +62,7 @@ class Region(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.title
+        return self.title_ru
 
     class Meta:
         verbose_name = 'область'
@@ -87,7 +87,7 @@ class District(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.title
+        return self.title_ru
 
     class Meta:
         verbose_name = 'район'
@@ -105,7 +105,9 @@ class Item(models.Model):
     category = models.ForeignKey(
         verbose_name='категория',
         to=Category,
-        on_delete=models.RESTRICT
+        on_delete=models.RESTRICT,
+        blank=True,
+        null=True
     )
     region = models.ForeignKey(
         verbose_name='область',
@@ -123,42 +125,64 @@ class Item(models.Model):
     )
     punkt_kk = models.CharField(
         verbose_name='населеный пункт на казахском',
-        max_length=150
+        max_length=150,
+        blank=True,
+        null=True
     )
     punkt_ru = models.CharField(
         verbose_name='населеный пункт на русском',
-        max_length=150
+        max_length=150,
+        blank=True,
+        null=True
     )
     punkt_en = models.CharField(
         verbose_name='населеный пункт на английском',
-        max_length=150
+        max_length=150,
+        blank=True,
+        null=True
     )
     date_of_action = models.DateField(
-        verbose_name='дата происшествия (утери/похищения)'
+        verbose_name='дата происшествия (утери/похищения)',
+        blank=True,
+        null=True
     )
     time_of_action = models.TimeField(
-        verbose_name='время происшествия (утери/похищения)'
+        verbose_name='время происшествия (утери/похищения)',
+        blank=True,
+        null=True
     )
     title_kk = models.CharField(
         verbose_name='наименование на казахском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     title_ru = models.CharField(
         verbose_name='наименование на русском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     title_en = models.CharField(
         verbose_name='наименование на английском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     text_kk = models.TextField(
-        verbose_name='описание на казахском'
+        verbose_name='описание на казахском',
+        blank=True,
+        null=True
     )
     text_ru = models.TextField(
-        verbose_name='описание на русском'
+        verbose_name='описание на русском',
+        blank=True,
+        null=True
     )
     text_en = models.TextField(
-        verbose_name='описание на английском'
+        verbose_name='описание на английском',
+        blank=True,
+        null=True
     )
     is_reward = models.BooleanField(
         verbose_name='показывать надпись: вознаграждение гарантируется',
@@ -168,16 +192,23 @@ class Item(models.Model):
         verbose_name='показывать надпись: внимание похищенная вещь',
         default=False
     )
+    details = models.JSONField(
+        verbose_name='детали',
+        blank=True,
+        null=True
+    )
     create_user = models.ForeignKey(
         verbose_name='кем создан',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
-        related_name='item_create_users'
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name='item_create_users',
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
         related_name='item_change_users'
@@ -207,7 +238,7 @@ class ItemFile(models.Model):
     item = models.ForeignKey(
         verbose_name='объявление',
         to=Item,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         related_name='files'
     )
     file = models.FileField(
@@ -242,23 +273,36 @@ class Info(models.Model):
     )
     title_kk = models.CharField(
         verbose_name='наименование на казахском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     title_ru = models.CharField(
         verbose_name='наименование на русском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     title_en = models.CharField(
         verbose_name='наименование на английском',
+        max_length=300,
+        blank=True,
+        null=True
     )
     text_kk = models.TextField(
-        verbose_name='описание на казахском'
+        verbose_name='описание на казахском',
+        blank=True,
+        null=True
     )
     text_ru = models.TextField(
-        verbose_name='описание на русском'
+        verbose_name='описание на русском',
+        blank=True,
+        null=True
     )
     text_en = models.TextField(
-        verbose_name='описание на английском'
+        verbose_name='описание на английском',
+        blank=True,
+        null=True
     )
     data = models.JSONField(
         verbose_name='json данные',
@@ -268,13 +312,15 @@ class Info(models.Model):
     create_user = models.ForeignKey(
         verbose_name='кем создан',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
         related_name='info_create_users'
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
         related_name='info_change_users'
@@ -303,7 +349,7 @@ class InfoFile(models.Model):
     info = models.ForeignKey(
         verbose_name='новость',
         to=Info,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         related_name='files'
     )
     file = models.FileField(
@@ -333,14 +379,21 @@ class Test(models.Model):
     )
     title_kk = models.CharField(
         verbose_name='наименование на казахском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     title_ru = models.CharField(
         verbose_name='наименование на русском',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
     title_en = models.CharField(
         verbose_name='наименование на английском',
+        max_length=300,
+        blank=True,
+        null=True
     )
     data = models.JSONField(
         verbose_name='json данные',
@@ -350,13 +403,15 @@ class Test(models.Model):
     create_user = models.ForeignKey(
         verbose_name='кем создан',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
         related_name='test_create_users'
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
         related_name='test_change_users'
@@ -385,7 +440,7 @@ class TestResult(models.Model):
     test = models.ForeignKey(
         verbose_name='тест',
         to=Test,
-        on_delete=models.RESTRICT
+        on_delete=models.CASCADE
     )
     data = models.JSONField(
         verbose_name='json данные',
@@ -395,13 +450,15 @@ class TestResult(models.Model):
     create_user = models.ForeignKey(
         verbose_name='кем создан',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
         related_name='test_result_create_users'
     )
     change_user = models.ForeignKey(
         verbose_name='кем изменен',
         to=get_user_model(),
-        on_delete=models.RESTRICT,
+        on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
         related_name='test_result_change_users'

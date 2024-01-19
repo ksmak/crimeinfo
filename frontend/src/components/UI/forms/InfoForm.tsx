@@ -2,7 +2,7 @@ import { Alert, Button } from "@material-tailwind/react"
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { IInfo, Media, UserRole } from "../../../types/types";
+import { IApiError, IInfo, Media, UserRole } from "../../../types/types";
 import Loading from "../elements/Loading";
 import InputField from "../elements/InputField";
 import moment from "moment";
@@ -39,14 +39,13 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
         text_ru: null,
         text_en: null,
         date_of_action: moment().format('YYYY-MM-DD'),
-        data: null,
-        photo_path: null
+        files: [],
     } as IInfo);
     const [loading, setLoading] = useState(false);
     const [editorStateKk, setEditorStateKk] = useState<EditorState>(EditorState.createEmpty());
     const [editorStateRu, setEditorStateRu] = useState<EditorState>(EditorState.createEmpty());
     const [editorStateEn, setEditorStateEn] = useState<EditorState>(EditorState.createEmpty());
-    const [photos, setMedias] = useState<Media[]>([]);
+    const [medias, setMedias] = useState<Media[]>([]);
     const [photoError, setMediaError] = useState(false);
 
     useEffect(() => {
@@ -83,92 +82,77 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
 
     const getInfo = async () => {
         setLoading(true);
-        instance.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}`)
-            .then(res => {
-                setInfo(res.data);
-                if (res.data.data?.photos) {
-                    let photosFromBase: Media[] = [];
-                    for (const url of res.data.data.photos) {
-                        const id = uuid();
-                        getFileFromUrl(url, id)
-                            .then(file => {
-                                photosFromBase.push({
-                                    id: id,
-                                    file: file,
-                                })
-                            })
-                    }
-                    setMedias(photosFromBase);
+        try {
+            const res = await instance.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}`);
+            setInfo(res.data);
+            if (res.data.files) {
+                let files: Media[] = [];
+                for (const f of res.data.files) {
+                    const file = await getFileFromUrl(f.file);
+                    files.push({ file: file });
+                    setMedias(files);
                 }
-                if (res.data.text_kk) {
-                    setEditorStateKk(setContent(res.data.text_kk));
-                }
-                if (res.data.text_ru) {
-                    setEditorStateRu(setContent(res.data.text_ru));
-                }
-                if (res.data.text_en) {
-                    setEditorStateEn(setContent(res.data.text_en));
-                }
-                setLoading(false);
-            })
-            .catch(err => {
-                console.log(err);
-                setLoading(false);
-                setErrorMessage(err.message);
-                setOpenError(true);
-            })
+            }
+            if (res.data.text_kk) {
+                setEditorStateKk(setContent(res.data.text_kk));
+            }
+            if (res.data.text_ru) {
+                setEditorStateRu(setContent(res.data.text_ru));
+            }
+            if (res.data.text_en) {
+                setEditorStateEn(setContent(res.data.text_en));
+            }
+            setLoading(false);
+        } catch (error) {
+            const err = error as IApiError;
+            console.log(err);
+            setLoading(false);
+            setErrorMessage(err.message);
+            setOpenError(true);
+        }
     }
-
     const handleSave = async () => {
         let newId = '';
         setErrorMessage('');
         setOpenError(false);
         setOpenSuccess(false);
         setLoading(true);
-        const photo_path = info.photo_path ? info.photo_path : `info/${uuid()}`;
-        const { uploadError, urls } = await uploadFiles('crimeinfo_storage', photo_path, photos);
-        if (uploadError) {
-            setLoading(false);
-            setErrorMessage(uploadError.message);
-            setOpenError(true);
-            setOpenSuccess(false);
-            return;
-        }
-        setInfo({ ...info, photo_path: photo_path });
         if (info.id) {
-            instance.put(`${process.env.REACT_APP_API_HOST}/info/`, info)
-                .then(res => {
-                    setInfo(res.data);
-                    setLoading(false);
-                    setOpenError(false);
-                    setOpenSuccess(true);
-                    setInterval(() => setOpenSuccess(false), 3000);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                    setErrorMessage(err.message);
-                    setOpenError(true);
-                    setOpenSuccess(false);
-                })
+            try {
+                const res = await instance.put(`${process.env.REACT_APP_API_HOST}/api/info/${info.id}/`, info);
+                setInfo(res.data);
+                await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/info/${info.id}/upload_files/`, medias);
+                setLoading(false);
+                setOpenError(false);
+                setOpenSuccess(true);
+                setInterval(() => setOpenSuccess(false), 3000);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+                setLoading(false);
+                setErrorMessage(err.message);
+                setOpenError(true);
+                setOpenSuccess(false);
+            }
         } else {
-            instance.post(`${process.env.REACT_APP_API_HOST}/info/`, info)
-                .then(res => {
-                    setInfo(res.data);
-                    setLoading(false);
-                    setOpenError(false);
-                    setOpenSuccess(true);
-                    setInterval(() => setOpenSuccess(false), 3000);
-                    newId = res.data.id;
-                    navigate(`/info/edit/${newId}`);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                    setErrorMessage(err.message);
-                    setOpenError(true);
-                    setOpenSuccess(false);
-                })
+            try {
+                const res = await instance.post(`${process.env.REACT_APP_API_HOST}/info/`, info);
+                setInfo(res.data);
+                await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/info/${res.data.id}/upload_files/`, medias);
+                setLoading(false);
+                setOpenError(false);
+                setOpenSuccess(true);
+                setInterval(() => setOpenSuccess(false), 3000);
+                newId = res.data.id;
+                navigate(`/info/edit/${newId}`);
+            } catch (error) {
+                const err = error as IApiError;
+                console.log(err);
+                setLoading(false);
+                setErrorMessage(err.message);
+                setOpenError(true);
+                setOpenSuccess(false);
+            }
         }
     }
 
@@ -181,7 +165,7 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
             if (e.target && files) {
                 const file = files[0];
                 const file_id = uuid()
-                setMedias([...photos, { id: file_id, file: file }]);
+                setMedias([...medias, { file: file }]);
             }
         };
         input.click();
@@ -191,7 +175,7 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
         if (index === 0) {
             setMedias([]);
         } else {
-            setMedias(photos.splice(index, 1));
+            setMedias(medias.splice(index, 1));
         }
     }
 
@@ -328,7 +312,7 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
                     </div>
                     <div className="w-full bg-white mb-4">
                         <MediaTable
-                            mediaItems={photos}
+                            mediaItems={medias}
                             handleAddMedia={handleAddMedia}
                             handleRemoveMedia={handleRemoveMedia}
                             showError={photoError}

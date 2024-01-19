@@ -85,12 +85,12 @@ const InfoCard = ({ info }: InfoCardProps) => {
                     </IconButton>
                 )}
             >
-                {info.data?.photos
-                    ? info.data.photos.map((photo, index) => (
+                {info.files
+                    ? info.files.map((item, index) => (
                         <img
                             key={index}
-                            src={photo}
-                            alt={photo}
+                            src={item.file}
+                            alt={item.file}
                             className="h-full w-full object-cover object-center"
                         />
 

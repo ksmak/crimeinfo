@@ -77,16 +77,14 @@ export interface IItem {
     punkt_en: string | null,
     date_of_action: string,
     time_of_action: string,
-    data: {
-        photos?: string[],
-        details?: IDetail[],
-    } | null,
+    details: IDetail[] | null,
     photo_path: string | null,
-    created_user: string,
-    change_user: string,
-    date_of_creation: string,
-    date_of_change: string,
-    show_danger_label: boolean
+    created_user: number | null,
+    change_user: number | null,
+    show_danger_label: boolean,
+    files: {
+        file: string
+    }[] | [],
 }
 
 export interface IDict {
@@ -118,7 +116,6 @@ export type Field = {
 }
 
 export type Media = {
-    id: string,
     file: File,
 }
 
@@ -155,9 +152,9 @@ export interface IInfo {
     text_ru: string | null,
     text_en: string | null,
     date_of_action: string,
-    data: {
-        photos: string[],
-    } | null,
+    files: {
+        file: string
+    }[] | [],
     photo_path: string | null,
     user_id: string | null,
     type: 'info'
@@ -258,4 +255,9 @@ export interface IWeather {
     id?: number,
     name?: string,
     cod?: number,
+}
+
+export interface IApiError {
+    message: string
+    status: number
 }

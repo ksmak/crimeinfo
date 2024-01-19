@@ -23,18 +23,18 @@ const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
     }, [item])
 
     const getMedias = async (item: IItem) => {
-        if (item?.data?.photos) {
-            let photosFromBase: Media[] = [];
-            for (const url of item.data.photos) {
-                const id = uuid();
-                const file = await getFileFromUrl(url, id);
-                photosFromBase.push({
-                    id: id,
-                    file: file,
-                })
-            }
-            setMedias(photosFromBase);
-        }
+        // if (item?.photos) {
+        //     let photosFromBase: Media[] = [];
+        //     for (const url of item.photos) {
+        //         const id = uuid();
+        //         const file = await getFileFromUrl(url, id);
+        //         photosFromBase.push({
+        //             id: id,
+        //             file: file,
+        //         })
+        //     }
+        //     setMedias(photosFromBase);
+        // }
     }
 
     const getPlaceInfo = (): string => {

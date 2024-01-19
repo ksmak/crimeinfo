@@ -1,48 +1,22 @@
 import axios from "axios";
 import { Media } from "../types/types";
+import instance from "../api/instance";
+import uuid from "react-uuid";
 
-export const uploadFiles = async (bucket: string, path: string, photos: Media[]) => {
-    // const { data: list } = await supabase.storage.from(bucket).list(`${path}`);
-    // const filesToRemove = list?.map((x) => `${path}/${x.name}`);
-    // if (filesToRemove?.length) {
-    //     const { error } = await supabase.storage.from(bucket).remove(filesToRemove);
-    //     if (error) {
-    //         return { uploadError: error, urls: null };
-    //     }
-    // }
-    // for (const photo of photos) {
-    //     const { error } = await supabase
-    //         .storage
-    //         .from(bucket)
-    //         .upload(`${path}/${photo.id}`, photo.file, {
-    //             cacheControl: '3600',
-    //             upsert: false
-    //         })
-    //     if (error) {
-    //         return { uploadError: error, urls: null };
-    //     }
-    // }
-    let urls: string[] = [];
-    // const { data: list2 } = await supabase.storage.from(bucket).list(`${path}`);
-    // const filesToUrl = list2?.map((x) => `${path}/${x.name}`);
-    // if (filesToUrl?.length) {
-    //     const { data, error } = await supabase
-    //         .storage
-    //         .from(bucket)
-    //         .createSignedUrls(filesToUrl, 365 * 24 * 60 * 60);
-    //     if (error) {
-    //         return { uploadError: error, urls: null };
-    //     }
-    //     if (data) {
-    //         urls = data.map((x) => x.signedUrl);
-    //     }
-    // }
-    return { uploadError: { message: '' }, urls: urls };
+export const uploadFiles = async (url: string, medias: Media[]) => {
+    let formData = new FormData();
+    medias.forEach(m => formData.append('files', m.file));
+    await instance.post(url, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
 }
 
-export const getFileFromUrl = async (url: string, name: string, defaultType = 'image/jpeg') => {
+export const getFileFromUrl = async (url: string, defaultType = 'image/jpeg') => {
     const response = await fetch(url);
     const data = await response.blob();
+    const name = uuid();
     return new File([data], name, {
         type: data.type || defaultType,
     });

@@ -30,53 +30,35 @@ function App() {
               <Route path='/' element={<MainPage />} />
               <Route path='/items'>
                 <Route path=':itemId' element={
-                  <ProtectedRouter>
-                    <ItemPage isEdit={false} />
-                  </ProtectedRouter>
+                  <ItemPage isEdit={false} />
                 } />
                 <Route path='edit/:itemId' element={
-                  <ProtectedRouter>
-                    <ItemPage isEdit={true} />
-                  </ProtectedRouter>
+                  <ItemPage isEdit={true} />
                 } />
                 <Route path='new' element={
-                  <ProtectedRouter>
-                    <ItemPage isEdit={true} />
-                  </ProtectedRouter>
+                  <ItemPage isEdit={true} />
                 } />
               </Route>
               <Route path='/info'>
                 <Route path=':infoId' element={
-                  <ProtectedRouter>
-                    <InfoPage isEdit={false} />
-                  </ProtectedRouter>
+                  <InfoPage isEdit={false} />
                 } />
                 <Route path='edit/:infoId' element={
-                  <ProtectedRouter>
-                    <InfoPage isEdit={true} />
-                  </ProtectedRouter>
+                  <InfoPage isEdit={true} />
                 } />
                 <Route path='new' element={
-                  <ProtectedRouter>
-                    <InfoPage isEdit={true} />
-                  </ProtectedRouter>
+                  <InfoPage isEdit={true} />
                 } />
               </Route>
               <Route path='/tests'>
                 <Route path=':testId' element={
-                  <ProtectedRouter>
-                    <TestPage isEdit={false} />
-                  </ProtectedRouter>
+                  <TestPage isEdit={false} />
                 } />
                 <Route path='edit/:testId' element={
-                  <ProtectedRouter>
-                    <TestPage isEdit={true} />
-                  </ProtectedRouter>
+                  <TestPage isEdit={true} />
                 } />
                 <Route path='new' element={
-                  <ProtectedRouter>
-                    <TestPage isEdit={true} />
-                  </ProtectedRouter>
+                  <TestPage isEdit={true} />
                 } />
               </Route>
               <Route path='/login' element={<LoginPage />} />

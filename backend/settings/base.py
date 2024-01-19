@@ -29,6 +29,7 @@ DJANGO_APPS = [
 PROJECT_APPS = [
     'auths',
     'main',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
