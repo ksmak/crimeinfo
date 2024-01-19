@@ -33,6 +33,7 @@ from .models import (
     Item,
     ItemFile,
     Info,
+    InfoFile,
     UserRole,
     Comment,
     Test,
@@ -170,10 +171,34 @@ class InfoViewSet(ModelViewSet):
         if self.request.user.is_authenticated:
             c1 = Q(create_user=self.request.user)
             c2 = Q(change_user=self.request.user)
-            queryset = Info.objects.filter(c1 | c2)
+            c3 = Q(is_active=True)
+            queryset = Info.objects.filter(c1 | c2 | c3)
         else:
             queryset = Info.objects.filter(is_active=True)
         return queryset
+
+    @action(detail=True, methods=('post', ))
+    @parser_classes((MultiPartParser, FormParser))
+    def upload_files(self, request, pk=None):
+        info = None
+        try:
+            info = Info.objects.get(pk=pk)
+        except:
+            print('Error info not found.')
+
+        if info is None:
+            return Response({
+                'errors': 'Info not found.'
+            }, HTTP_404_NOT_FOUND)
+
+        info.files.all().delete()
+        for file in self.request.data.getlist('files'):
+            mf = InfoFile.objects.create(info=info, file=file)
+            info.files.add(mf)
+
+        return Response({
+            'ok'
+        }, HTTP_200_OK)
 
 
 class TestViewSet(ModelViewSet):
@@ -188,7 +213,8 @@ class TestViewSet(ModelViewSet):
         if self.request.user.is_authenticated:
             c1 = Q(create_user=self.request.user)
             c2 = Q(change_user=self.request.user)
-            queryset = Test.objects.filter(c1 | c2)
+            c3 = Q(is_active=True)
+            queryset = Test.objects.filter(c1 | c2 | c3)
         else:
             queryset = Test.objects.filter(is_active=True)
 

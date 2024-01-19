@@ -295,7 +295,6 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                             name='is_active'
                             checked={item.is_active === true}
                             onChange={(e) => setItem({ ...item, is_active: !item.is_active })}
-                            required={true}
                         />
                     </div>
                     <div className="w-full mb-4">
