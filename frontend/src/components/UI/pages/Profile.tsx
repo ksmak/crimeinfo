@@ -7,14 +7,13 @@ import { useAuth } from "../../../lib/auth";
 const Profile = () => {
     const { t } = useTranslation();
     const { user, isAuthenticated } = useAuth();
-    const userId = user?.email;
 
     return (
         <div>
             <NavigatorPanel />
             <Typography variant="h3" color="blue" className="text-center">{t('userProfile')}</Typography>
-            {isAuthenticated && userId
-                ? <ProfileForm userId={userId} />
+            {isAuthenticated && user?.id
+                ? <ProfileForm userId={user.id} />
                 : <Alert>{t('errorAccess')}</Alert>}
         </div>
     )

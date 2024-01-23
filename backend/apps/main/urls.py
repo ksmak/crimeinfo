@@ -22,6 +22,7 @@ router.register('tests', TestViewSet, basename='tests')
 router.register('test_results', TestResultViewSet, basename='test_results')
 router.register('comments', CommentViewSet, basename='comments')
 
+
 urlpatterns = [
     path('categories/', CategoryView.as_view(), name='categories'),
     path('regions/', RegionView.as_view(), name='regions'),

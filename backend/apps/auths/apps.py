@@ -7,4 +7,4 @@ class AuthsConfig(AppConfig):
     verbose_name = 'пользователи'
 
     def ready(self) -> None:
-        import auths.signals
+        import auths.signals  # noqa

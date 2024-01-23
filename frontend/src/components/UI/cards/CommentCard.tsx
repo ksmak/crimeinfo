@@ -44,7 +44,7 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
             </div>
             <div className="w-full">
                 <div className="flex flex-row justify-between flex-wrap md:flex-nowrap">
-                    <div className="text-blue-400 italic text-sm font-bold">{profile?.full_name ? profile.full_name : t('noname')}</div>
+                    <div className="text-blue-400 italic text-sm font-bold">{profile?.name ? profile.name : t('noname')}</div>
                     <div className="text-sm font-serif text-blue-gray-800 italic mr-1">{moment(comment.create_at).locale(i18n.language).format('LLLL')}</div>
                 </div>
                 <div className="text-sm font-normal">{comment.text}</div>

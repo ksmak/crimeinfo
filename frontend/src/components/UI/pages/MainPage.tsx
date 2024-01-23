@@ -62,7 +62,7 @@ const MainPage = () => {
                         <CategoriesPanel categories={categories} />
                     </div>
                 </div>
-                <div className="w-full md:w-1/2 my-16 px-5 self-center">
+                <div className="w-full md:w-1/2 pt-16 px-5 self-center gap-20">
                     <Input
                         placeholder={t('search')}
                         icon={<BsSearch />}
@@ -79,8 +79,10 @@ const MainPage = () => {
                             }
                         }}
                     />
-                    <div className="mt-20 [text-shadow:_0_2px_0_rgba(199,229,252,255)] pt-4 text-primary-500 text-right text-xl font-lobster">{t('citate')}</div>
-                    <div className="[text-shadow:_0_2px_0_rgba(199,229,252,255)] py-1 text-primary-500 text-right text-lg font-lobster">{t('prezident')}</div>
+                    <div>
+                        <div className="[text-shadow:_0_2px_0_rgba(199,229,252,255)] pt-4 text-primary-500 text-right text-xl font-lobster">{t('citate')}</div>
+                        <div className="[text-shadow:_0_2px_0_rgba(199,229,252,255)] py-1 text-primary-500 text-right text-lg font-lobster">{t('prezident')}</div>
+                    </div>
                 </div>
             </div>
             <FirstView open={first} setOpen={setFirst} />

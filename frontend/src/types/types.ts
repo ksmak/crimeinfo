@@ -131,8 +131,8 @@ export interface IComment {
 
 export interface IProfile {
     id?: number | null,
-    username?: string | null,
-    full_name?: string | null,
+    email?: string | null,
+    name?: string | null,
     avatar_url?: string | null,
 }
 

@@ -4,16 +4,13 @@ import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Loading from "../elements/Loading";
-import InputField from "../elements/InputField";
-import uuid from "react-uuid";
-import { getFileFromUrl, uploadFiles } from "../../../utils/utils";
-import { useAuth } from "../../../lib/auth";
 import instance from "../../../api/instance";
+import uuid from 'react-uuid';
+import { getFileFromUrl, uploadFiles } from "../../../utils/utils";
 interface ProfileFormProps {
-    userId: string
+    userId: number
 }
 const ProfileForm = ({ userId }: ProfileFormProps) => {
-    const { user } = useAuth();
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [profile, setProfile] = useState<IProfile>({});
@@ -21,7 +18,7 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState('');
-    const [avatar, setAvatar] = useState<Media>();
+    const [avatar, setAvatar] = useState<Media[]>();
 
     useEffect(() => {
         if (userId) {
@@ -29,17 +26,12 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
         }
     }, [userId]);
 
-    const getProfile = async (userId: string) => {
+    const getProfile = async (userId: number) => {
         try {
-            const res = await instance.get(`${process.env.REACT_APP_HOST}/users/${userId}`);
+            const res = await instance.get(`${process.env.REACT_APP_API_HOST}/api/profiles/${userId}`);
             setProfile(res.data);
-            if (res.data.avatar) {
-                const file = await getFileFromUrl(res.data.avatar);
-                setAvatar({ file: file });
-            }
         } catch (error) {
             const err = error as IApiError;
-            console.log(err);
 
         }
     }
@@ -51,32 +43,20 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
         setLoading(true);
         if (profile.id) {
             try {
-                const res = await instance.put(`${process.env.REACT_APP_API_HOST}/users/`, profile);
+                const res = await instance.put(`${process.env.REACT_APP_API_HOST}/api/profiles/${userId}/`, profile);
                 setProfile(res.data);
+                if (res.data.avatar) {
+                    const id = uuid();
+                    const file = await getFileFromUrl(res.data.avatar, id);
+                    setAvatar([{ file: file }]);
+                }
                 setLoading(false);
                 setIsError(false);
                 setIsSuccesSave(true);
                 setInterval(() => setIsSuccesSave(false), 3000);
             } catch (error) {
+                setLoading(false);
                 const err = error as IApiError;
-                console.log(err);
-                setLoading(false);
-                setErrors(err.message);
-                setIsError(true);
-                setIsSuccesSave(false);
-            }
-        } else {
-            try {
-                const res = await instance.post(`${process.env.REACT_APP_API_HOST}/users/`, profile);
-                setProfile(res.data);
-                setLoading(false);
-                setIsError(false);
-                setIsSuccesSave(true);
-                setInterval(() => setIsSuccesSave(false), 3000);
-            } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
-                setLoading(false);
                 setErrors(err.message);
                 setIsError(true);
                 setIsSuccesSave(false);
@@ -96,7 +76,7 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
             const files = (e.target as HTMLInputElement).files;
             if (e.target && files) {
                 const file = files[0];
-                setAvatar({ file: file });
+                setAvatar([{ file: file }]);
             }
         };
         input.click();
@@ -137,7 +117,7 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
                             {avatar
                                 ? <img
                                     className="w-full h-full border-2 border-blue-gray-100 rounded-lg"
-                                    src={URL.createObjectURL(avatar.file)}
+                                    src={URL.createObjectURL(avatar[0].file)}
                                     alt="avatar"
                                 />
                                 : null}
@@ -156,23 +136,32 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
                     </div>
                     <div className="px-4 flex flex-col">
                         <div className="w-full mb-4">
-                            <InputField
-                                type='text'
-                                name='email'
-                                label={t('yourEmail')}
-                                value={user ? user.email : ''}
-                                onChange={() => null}
-                                required={false}
+                            <label
+                                htmlFor="email"
+                                className="text-blue-400 bold mr-1"
+                            >
+                                {t('yourEmail')}
+                            </label>
+                            <input
+                                id="email"
+                                className="border-2 border-blue-gray-200 p-1 w-full rounded-md"
+                                type="text"
+                                disabled={true}
                             />
                         </div>
                         <div className="w-full mb-4">
-                            <InputField
-                                type='text'
-                                name='full_name'
-                                label={t('yourFullname')}
-                                value={profile.full_name ? profile.full_name : ''}
-                                onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                                required={true}
+                            <label
+                                htmlFor="name"
+                                className="text-blue-400 bold mr-1"
+                            >
+                                {t('yourName')}
+                            </label>
+                            <input
+                                id="name"
+                                className="border-2 border-blue-gray-200 p-1 w-full rounded-md"
+                                type="text"
+                                value={profile.name ? profile.name : ''}
+                                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                             />
                         </div>
                     </div>

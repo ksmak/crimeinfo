@@ -13,7 +13,6 @@ from .models import (
     UserRole,
     Comment,
 )
-from auths.serializers import MyUserSerializer
 
 
 class RegionSerializer(serializers.ModelSerializer):

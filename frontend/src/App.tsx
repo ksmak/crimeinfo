@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { AuthProvider, ProtectedRouter } from "./lib/auth";
+import { AuthProvider } from "./lib/auth";
 import { MetaProvider } from './lib/meta';
 import MainPage from './components/UI/pages/MainPage';
 import InfoPage from './components/UI/pages/InfoPage';
@@ -19,63 +19,143 @@ import ItemPage from './components/UI/pages/ItemPage';
 import ResetPasswordPage from './components/UI/pages/ResetPasswordPage';
 import ChangePasswordPage from './components/UI/pages/ChangePasswordPage';
 import LoginPage from './components/UI/pages/LoginPage';
+import ActivatePage from './components/UI/pages/ActivatePage';
 
 function App() {
   return (
     <Suspense fallback="loading">
-      <AuthProvider>
-        <MetaProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path='/' element={<MainPage />} />
-              <Route path='/items'>
-                <Route path=':itemId' element={
+      <BrowserRouter>
+        <Routes>
+          <Route path='/activate/:code' element={<ActivatePage />} />
+          <Route path='/' element={
+            <AuthProvider>
+              <MetaProvider>
+                <MainPage />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+          <Route path='/items'>
+            <Route path=':itemId' element={
+              <AuthProvider>
+                <MetaProvider>
                   <ItemPage isEdit={false} />
-                } />
-                <Route path='edit/:itemId' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+            <Route path='edit/:itemId' element={
+              <AuthProvider>
+                <MetaProvider>
                   <ItemPage isEdit={true} />
-                } />
-                <Route path='new' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+            <Route path='new' element={
+              <AuthProvider>
+                <MetaProvider>
                   <ItemPage isEdit={true} />
-                } />
-              </Route>
-              <Route path='/info'>
-                <Route path=':infoId' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+          </Route>
+          <Route path='/info'>
+            <Route path=':infoId' element={
+              <AuthProvider>
+                <MetaProvider>
                   <InfoPage isEdit={false} />
-                } />
-                <Route path='edit/:infoId' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+            <Route path='edit/:infoId' element={
+              <AuthProvider>
+                <MetaProvider>
                   <InfoPage isEdit={true} />
-                } />
-                <Route path='new' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+            <Route path='new' element={
+              <AuthProvider>
+                <MetaProvider>
                   <InfoPage isEdit={true} />
-                } />
-              </Route>
-              <Route path='/tests'>
-                <Route path=':testId' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+          </Route>
+          <Route path='/tests'>
+            <Route path=':testId' element={
+              <AuthProvider>
+                <MetaProvider>
                   <TestPage isEdit={false} />
-                } />
-                <Route path='edit/:testId' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+            <Route path='edit/:testId' element={
+              <AuthProvider>
+                <MetaProvider>
                   <TestPage isEdit={true} />
-                } />
-                <Route path='new' element={
+                </MetaProvider>
+              </AuthProvider>
+            } />
+            <Route path='new' element={
+              <AuthProvider>
+                <MetaProvider>
                   <TestPage isEdit={true} />
-                } />
-              </Route>
-              <Route path='/login' element={<LoginPage />} />
-              <Route path='/search' element={<SearchPage />} />
-              <Route path='/about' element={<AboutPage />} />
-              <Route path='/profile' element={<Profile />} />
-              <Route path='/categories' element={<CategoriesPage />} />
-              <Route path='/register_success' element={<SuccessRegister />} />
-              <Route path='/test_success' element={<SuccessTest />} />
-              <Route path='/test_result/:testId' element={<TestResultPage />} />
-              <Route path='/reset_password' element={<ResetPasswordPage />} />
-              <Route path='/profile/change_password' element={<ChangePasswordPage />} />
-            </Routes>
-          </BrowserRouter>
-        </MetaProvider>
-      </AuthProvider>
-    </Suspense>
+                </MetaProvider>
+              </AuthProvider>
+            } />
+          </Route>
+          <Route path='/login' element={
+            <AuthProvider>
+              <LoginPage />
+            </AuthProvider>
+          } />
+          <Route path='/search' element={
+            <AuthProvider>
+              <MetaProvider>
+                <SearchPage />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+          <Route path='/about' element={
+            <AuthProvider>
+              <MetaProvider>
+                <AboutPage />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+          <Route path='/profile' element={
+            <AuthProvider>
+              <MetaProvider>
+                <Profile />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+          <Route path='/categories' element={
+            <AuthProvider>
+              <MetaProvider>
+                <CategoriesPage />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+          <Route path='/register_success' element={<SuccessRegister />} />
+          <Route path='/test_success' element={<SuccessTest />} />
+          <Route path='/test_result/:testId' element={
+            <AuthProvider>
+              <MetaProvider>
+                <TestResultPage />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+          <Route path='/reset_password' element={<ResetPasswordPage />} />
+          <Route path='/profile/change_password' element={
+            <AuthProvider>
+              <MetaProvider>
+                <ChangePasswordPage />
+              </MetaProvider>
+            </AuthProvider>
+          } />
+        </Routes>
+      </BrowserRouter >
+    </Suspense >
   );
 }
 

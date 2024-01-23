@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.db.models.base import ModelBase
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import smtplib
 
 from .models import MyUser
 
@@ -20,18 +21,25 @@ def post_save_custom_user(
     *args: Any,
     **kwargs: Any
 ) -> None:
-    """Активация пользователя по почте."""
     if not created:
         return
 
-    link: str = 'http://127.0.0.1:8000/activate/' + instance.activation_code
+    """Активация пользователя по почте."""
+    link: str = f"{settings.CLIENT_HOST}/activate/{instance.activation_code}/"
 
     print("Отправка сообщения на почту...", instance.email)
 
-    # send_mail(
-    #     'Подтверждение регистрации пользователя',
-    #     f'Для подтверждения регистрации перейдите по следующей ссылке {link}',
-    #     settings.EMAIL_HOST_USER,
-    #     [ instance.email ],
-    #     fail_silently=False
-    # )
+    try:
+        send_mail(
+            'Активация пользователя в crimeinfo.kz',
+            (f'Мы получили запрос на активацию вашей учётной записи.\n'
+             f'Если вы делали такой запрос, нажмите на ссылку ниже. '
+             f'Если нет, просто проигнорируйте это письмо.\n\n{link}\n\n'
+             '(Ссылка в письме не работает? Попробуйте скопировать'
+             ' её и вставить в адресную строку браузера!)'),
+            settings.EMAIL_HOST_USER,
+            [instance.email],
+            fail_silently=True
+        )
+    except smtplib.SMTPException:
+        print("Error sending mail!")

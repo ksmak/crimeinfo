@@ -38,7 +38,7 @@ const ResetPasswordPage = () => {
             <Card className="w-96">
                 <CardBody>
                     <div className="flex flex-col w-full">
-                        <div className="mb-5 text-red-600">
+                        <div className="mb-5 text-primary-500">
                             {t('resetPasswordText')}
                         </div>
                         <div className="mb-5">

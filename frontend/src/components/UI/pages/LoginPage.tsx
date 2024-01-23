@@ -14,18 +14,13 @@ const LoginPage = () => {
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [errorLogin, setErrorLogin] = useState<string>('');
-    const [errorRegister, setErrorRegister] = useState<string>('');
+    const [errorRegisterEmail, setErrorRegisterEmail] = useState<string>('');
+    const [errorRegisterPassword, setErrorRegisterPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleSignUp = async () => {
-        if (password.length < 6) {
-            setErrorRegister(t('errorPasswordLen'));
-            return;
-        }
-        if (password !== confirmPassword) {
-            setErrorRegister(t('errorPasswordConfirm'));
-            return;
-        }
+        setErrorRegisterEmail('');
+        setErrorRegisterPassword('');
         setLoading(true);
         axios.post(`${process.env.REACT_APP_API_HOST}/auth/register/`, {
             email: email,
@@ -38,8 +33,14 @@ const LoginPage = () => {
             })
             .catch(err => {
                 setLoading(false);
-                console.log(err);
-                setErrorRegister(t('errorSignUp'));
+                if (err.response.data.email) {
+                    let errMessage = err.response.data.email.join('\n');
+                    setErrorRegisterEmail(errMessage);
+                }
+                if (err.response.data.password) {
+                    let errMessage = err.response.data.password.join('\n');
+                    setErrorRegisterPassword(errMessage);
+                }
             })
     }
 
@@ -85,10 +86,7 @@ const LoginPage = () => {
                         >
                             <TabPanel className="p-0" key={0} value='enter'>
                                 <div className="flex flex-col w-full">
-                                    <div className="mb-5 text-red-600">
-                                        {errorLogin}
-                                    </div>
-                                    <div className="mb-5">
+                                    <div className="my-5">
                                         <Input
                                             type="email"
                                             name="email"
@@ -107,6 +105,9 @@ const LoginPage = () => {
                                             crossOrigin=""
                                             onChange={(e) => setPassword(e.target.value)}
                                         />
+                                        <div className="text-red-600 text-sm">
+                                            {errorLogin}
+                                        </div>
                                     </div>
                                     <div className="mb-5 text-center">
                                         <a className="text-sm text-blue-400" href="/reset_password">{t('forgetPassword')}</a>
@@ -123,10 +124,7 @@ const LoginPage = () => {
                             </TabPanel>
                             <TabPanel className="p-0" key={1} value='register'>
                                 <div className="flex flex-col w-full">
-                                    <div className="mb-5 text-red-600">
-                                        {errorRegister}
-                                    </div>
-                                    <div className="mb-5">
+                                    <div className="my-5">
                                         <Input
                                             type="email"
                                             name="email"
@@ -135,6 +133,9 @@ const LoginPage = () => {
                                             crossOrigin=""
                                             onChange={(e) => setEmail(e.target.value)}
                                         />
+                                        <div className="text-red-600 text-sm">
+                                            {errorRegisterEmail}
+                                        </div>
                                     </div>
                                     <div className="mb-5">
                                         <Input
@@ -155,6 +156,9 @@ const LoginPage = () => {
                                             crossOrigin=""
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                         />
+                                        <div className="text-red-600 text-sm">
+                                            {errorRegisterPassword}
+                                        </div>
                                     </div>
                                     <div className="self-center">
                                         <Button

@@ -3,8 +3,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
+from .utils import MAX_ACTIVATION_CODE_SIZE, get_activation_code
 
-from .models import MyUser
 
 User = get_user_model()
 
@@ -41,7 +41,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create(
-            email=validated_data['email']
+            email=validated_data['email'],
+            activation_code=get_activation_code(
+                MAX_ACTIVATION_CODE_SIZE)
         )
 
         user.set_password(validated_data['password'])
@@ -50,10 +52,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class MyUserSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     """
-    MyUser serializer.
+    Profile serializer.
     """
     class Meta:
         model = User
-        exclude = ("password", )
+        fields = ("name", "avatar")

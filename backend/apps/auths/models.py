@@ -1,5 +1,3 @@
-import random
-
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import (
@@ -7,6 +5,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
+from .utils import MAX_ACTIVATION_CODE_SIZE
 
 
 class MyUserManager(BaseUserManager):
@@ -41,20 +40,19 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
-    MAX_ACTIVATION_CODE_SIZE = 32
     email = models.EmailField(
         verbose_name='логин(почта)',
         max_length=150,
         unique=True
     )
     name = models.CharField(
-        verbose_name='фамилия',
+        verbose_name='имя',
         max_length=255,
         blank=True,
         null=True
     )
     surname = models.CharField(
-        verbose_name='имя',
+        verbose_name='фамилия',
         max_length=255,
         blank=True,
         null=True
@@ -112,21 +110,6 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     @property
     def full_name(self):
         return f"{self.surname} {self.name} {self.patronymic}"
-
-    def get_activation_code(self, code_len: int):
-        digits = '0123456789'
-        alfabet = 'ABCDEFGHJKLMNOPQRSTVWXYZ'
-        symbols = digits + alfabet
-        code = []
-        for _ in range(code_len):
-            code.append(symbols[random.randint(0, len(symbols) - 1)])
-
-        return ''.join(code)
-
-    def save(self, *args, **kwargs):
-        self.activation_code = self.get_activation_code(
-            self.MAX_ACTIVATION_CODE_SIZE)
-        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'пользователь'

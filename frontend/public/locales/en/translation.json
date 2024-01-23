@@ -21,7 +21,8 @@
     "exit": "Exit",
     "errorLogin": "Invalid login or password!",
     "repeatPassword": "Repeat password",
-    "errorPasswordLen": "Password must be at least 6 characters long",
+    "errorEmailAddress": "Incorrect postal address",
+    "errorPasswordLen": "Password is too short",
     "errorPasswordConfirm": "Passwords do not match",
     "errorSignUp": "Error during registration",
     "successRegister": "To activate your account, follow the link sent to your email.",
@@ -145,5 +146,6 @@
     "locationMap": "Location on the map",
     "reward": "Show the label: A reward guaranteed!",
     "warning_text": "Warning: Information obtained from this service is presented solely for the purpose of assisting law enforcement agencies in finding stolen or wanted items. Information found about any thing (item) or its absence is not a legal justification for its purchase (acquisition) or sale (sale).",
-    "copied": "copied!"
+    "copied": "copied!",
+    "successActivate": "Your account has been successfully activated!"
 }
