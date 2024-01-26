@@ -12,6 +12,7 @@ from .views import (
     TestResultViewSet,
     UserRoleView,
     CommentViewSet,
+    ItemCommentsView,
 )
 
 
@@ -28,5 +29,7 @@ urlpatterns = [
     path('regions/', RegionView.as_view(), name='regions'),
     path('districts/', DistrictView.as_view(), name='districts'),
     path('', include(router.urls)),
-    path('roles/', UserRoleView.as_view(), name='roles')
+    path('roles/', UserRoleView.as_view(), name='roles'),
+    path('item_comments/<int:item_id>', ItemCommentsView.as_view(),
+         name='item_comments')
 ]

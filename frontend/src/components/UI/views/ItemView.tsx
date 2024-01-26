@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import CommentsPanel from "../panels/CommentsPanel";
 import Loading from "../elements/Loading";
 import SocialButtonsPanel from "../panels/SocialButtonsPanel";
-import uuid from "react-uuid";
 import { getFileFromUrl } from "../../../utils/utils";
 import { useAuth } from "../../../lib/auth";
 import { useMeta } from "../../../lib/meta";
@@ -22,12 +21,11 @@ interface ItemViewProps {
 }
 
 const ItemView = ({ itemId }: ItemViewProps) => {
-    const { isAuthenticated, roles } = useAuth();
+    const { isAuthenticated, user, roles } = useAuth();
     const { categories, regions, districts } = useMeta();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [comment, setComment] = useState<IComment>();
-    const [openError, setOpenError] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [item, setItem] = useState<IItem>({
@@ -69,12 +67,11 @@ const ItemView = ({ itemId }: ItemViewProps) => {
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`);
             setItem(res.data);
-            setComment({ item_id: res.data.id });
+            setComment({ item: res.data.id });
             if (res.data.files) {
                 let files: Media[] = [];
                 for (const f of res.data.files) {
-                    const id = uuid();
-                    const file = await getFileFromUrl(f.file, id);
+                    const file = await getFileFromUrl(f.file);
                     files.push({ file: file });
                 }
                 setMedias(files);
@@ -85,11 +82,13 @@ const ItemView = ({ itemId }: ItemViewProps) => {
         }
     }
 
-    const getComments = (itemId: string) => {
-        axios.get(`${process.env.REACT_APP_API_HOST}/api/comments/for_item?item_id=${itemId}`)
-            .then(res => {
-                setComments(res.data);
-            })
+    const getComments = async (itemId: string) => {
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_API_HOST}/api/item_comments/${itemId}`)
+            setComments(res.data);
+        } catch (error) {
+
+        }
     }
 
     const getPlaceInfo = (): string => {
@@ -120,44 +119,46 @@ const ItemView = ({ itemId }: ItemViewProps) => {
     const date_add = `${t('dateAdd')}: ${moment(item.date_of_action).locale(i18n.language).format('LL')}`;
 
     const handleAddComment = async () => {
-        if (!isAuthenticated) {
+        if (!isAuthenticated && user?.id) {
             navigate('/login')
         }
         if (!comment?.text) {
             setError(t('errorEmptyComment'));
-            setOpenError(true);
             return;
         }
         setLoading(true);
-        instance.post(`${process.env.REACT_APP_API_HOST}/comments`, comment)
-            .then(res => {
-                setComments([...comments, res.data]);
-                setComment({ item_id: item.id });
-                setLoading(false);
-            })
-            .catch(err => {
-                setLoading(false);
-                console.log(err);
-                setError(err.message);
-                setOpenError(true);
-            })
-
+        comment.user = user?.id;
+        try {
+            const res = await instance.post(`${process.env.REACT_APP_API_HOST}/api/comments/`, comment)
+            setComments([...comments, res.data]);
+            setComment({ item: item.id });
+            setLoading(false);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data.errors);
+            } else {
+                setError(String(error));
+            }
+            setLoading(false);
+        }
     }
 
     const handleRemoveComment = async (id: number | null | undefined) => {
-        setLoading(true);
         if (id) {
-            instance.delete(`${process.env.REACT_APP_API_HOST}/comments/${id}/`)
-                .then(res => {
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setError(err.message);
-                    setOpenError(true);
-                })
+            setLoading(true);
+            try {
+                await instance.delete(`${process.env.REACT_APP_API_HOST}/api/comments/${id}/`)
+                setComments(comments.filter(item => item.id !== id))
+                setLoading(false);
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.errors);
+                } else {
+                    setError(String(error));
+                }
+                setLoading(false);
+            }
         }
-        setLoading(false);
     }
 
     const handleClickChip = (detail: IDetail) => {
@@ -182,6 +183,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                     </Button>
                     : null}
             </div>
+            <Alert className="bg-red-500 my-4 sticky bottom-5" open={error !== ''} onClose={() => setError('')}>{error}</Alert>
             {item.id
                 ? <div>
                     {!item.is_active ? <div className="text-red-400 font-bold">
@@ -316,7 +318,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                                     ? medias.map((item, index) => {
                                         const type = item.file.type.replace(/\/.+/, '');
                                         return (
-                                            <div >
+                                            <div key={index}>
                                                 {type === 'image'
                                                     ? <a key={index} href={URL.createObjectURL(item.file)} target="_blank" rel="noreferrer">
                                                         <img
@@ -362,7 +364,6 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                 </div>
                 : null}
             {loading ? <Loading /> : null}
-            <Alert className="bg-red-500 my-4 sticky bottom-5" open={openError} onClose={() => setOpenError(!openError)}>{error}</Alert>
         </div>
     )
 }

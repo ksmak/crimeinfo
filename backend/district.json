@@ -1,0 +1,83 @@
+[
+    {
+        "model": "main.district",
+        "pk": 1,
+        "fields": {
+            "title_ru": "район Алихана Бокейханова",
+            "title_kk": "Алихан Бөкейхан ауданы",
+            "title_en": "district of Alikhan Bokeikhanov"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 2,
+        "fields": {
+            "title_ru": "Казыбекбийский район",
+            "title_kk": "Қазыбекби ауданы",
+            "title_en": "Kazybekbi district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 3,
+        "fields": {
+            "title_ru": "Абайский район",
+            "title_kk": "Абай ауданы",
+            "title_en": "Abai district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 4,
+        "fields": {
+            "title_ru": "Актогайский район",
+            "title_kk": "Ақтоғай ауданы",
+            "title_en": "Aktogay district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 5,
+        "fields": {
+            "title_ru": "Бухар-Жырауский район",
+            "title_kk": "Бұқар-Жырау ауданы",
+            "title_en": "Bukhar-Zhyrau district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 6,
+        "fields": {
+            "title_ru": "Каркаралинский район",
+            "title_kk": "Қарқаралы ауданы",
+            "title_en": "Karkaraly district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 7,
+        "fields": {
+            "title_ru": "Нуринский район",
+            "title_kk": "Нұра ауданы",
+            "title_en": "Nura district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 8,
+        "fields": {
+            "title_ru": "Осакаровский район",
+            "title_kk": "Осакаров ауданы",
+            "title_en": "Osakarov district"
+        }
+    },
+    {
+        "model": "main.district",
+        "pk": 9,
+        "fields": {
+            "title_ru": "Шетский район",
+            "title_kk": "Шет ауданы",
+            "title_en": "Shet district"
+        }
+    }
+]

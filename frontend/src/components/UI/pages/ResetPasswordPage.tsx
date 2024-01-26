@@ -1,40 +1,42 @@
 import { Alert, Button, Card, CardBody, Input } from "@material-tailwind/react";
 import LanguagePanel from "../panels/LanguagePanel";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import Loading from "../elements/Loading";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 const ResetPasswordPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleResetPassword = async () => {
         setLoading(true);
-        axios.post(`${process.env.REACT_APP_API_HOST}/users/reset_password/`, {
-            email: email
-        })
-            .then(res => {
-                setLoading(false);
-                setError(false);
-                navigate('/');
+        try {
+            await axios.post(`${process.env.REACT_APP_API_HOST}/auth/reset_password/`, {
+                email: email
             })
-            .catch(err => {
-                setLoading(false);
-                setMessage(err.message);
-                setError(true);
-            })
-    };
+            setLoading(false);
+            setError('');
+            navigate('/reset_success');
+
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data.errors);
+            } else {
+                setError(String(error));
+            }
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="container mx-auto flex flex-col justify-center items-center mt-24">
             <LanguagePanel />
+            <Alert className="bg-red-400 mt-4" open={error !== ''} onClose={() => setError('')}>{error}</Alert>
             <Card className="w-96">
                 <CardBody>
                     <div className="flex flex-col w-full">
@@ -68,8 +70,6 @@ const ResetPasswordPage = () => {
                     </div>
                 </CardBody>
             </Card>
-            <Alert className="bg-primary-500 mt-4" open={success} onClose={() => setSuccess(false)}>{message}</Alert>
-            <Alert className="bg-red-400 mt-4" open={error} onClose={() => setError(false)}>{message}</Alert>
             {loading ? <Loading /> : null}
         </div>
     )

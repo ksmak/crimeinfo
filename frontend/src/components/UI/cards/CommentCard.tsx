@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import moment from "moment";
 import { AiFillDelete } from "react-icons/ai";
 import { useAuth } from "../../../lib/auth";
-import axios from "axios";
+import instance from "../../../api/instance";
 
 interface CommentCardProps {
     comment: IComment,
@@ -17,8 +17,8 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
     const { t, i18n } = useTranslation();
     const [profile, setProfile] = useState<IProfile>();
 
-    const getUserProfile = async (userId: string) => {
-        axios.get(`${process.env.REACT_APP_API_HOST}/users/${userId}/`)
+    const getUserProfile = async (userId: number) => {
+        instance.get(`${process.env.REACT_APP_API_HOST}/auth/users/${userId}/`)
             .then(res => {
                 setProfile(res.data);
             })
@@ -27,8 +27,8 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
             })
     }
     useEffect(() => {
-        if (comment.user_id) {
-            getUserProfile(comment.user_id);
+        if (comment.user) {
+            getUserProfile(comment.user);
         }
     }, [comment]);
 
@@ -37,7 +37,7 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
             <div className="mr-5 self-center">
                 <Avatar
                     className="p-0.5 border-blue-gray-100 place-self-center"
-                    src={profile?.avatar_url ? profile.avatar_url : 'default_avatar.png'}
+                    src={profile?.avatar ? profile.avatar : 'default_avatar.png'}
                     alt="avatar"
                     size="md"
                 />
@@ -50,7 +50,7 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
                 <div className="text-sm font-normal">{comment.text}</div>
             </div>
             <div className="w-10 justify-self-end self-center">
-                {comment.user_id === user?.id
+                {comment.user === user?.id
                     ? <IconButton
                         className="rounded-full"
                         size="sm"

@@ -20,6 +20,9 @@ import ResetPasswordPage from './components/UI/pages/ResetPasswordPage';
 import ChangePasswordPage from './components/UI/pages/ChangePasswordPage';
 import LoginPage from './components/UI/pages/LoginPage';
 import ActivatePage from './components/UI/pages/ActivatePage';
+import SuccessResetPassword from './components/UI/pages/SuccessReset';
+import ConfirmResetPasswordPage from './components/UI/pages/ConfirmResetPassword';
+import SuccessConfirm from './components/UI/pages/SuccessConfirm';
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/activate/:code' element={<ActivatePage />} />
+          <Route path='/confirm_reset_password/:code' element={
+            <ConfirmResetPasswordPage />
+          } />
           <Route path='/' element={
             <AuthProvider>
               <MetaProvider>
@@ -146,6 +152,8 @@ function App() {
             </AuthProvider>
           } />
           <Route path='/reset_password' element={<ResetPasswordPage />} />
+          <Route path='/reset_success' element={<SuccessResetPassword />} />
+          <Route path='/confirm_success' element={<SuccessConfirm />} />
           <Route path='/profile/change_password' element={
             <AuthProvider>
               <MetaProvider>

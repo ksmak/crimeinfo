@@ -7,6 +7,8 @@ from .views import (
     RegisterView,
     ActivateView,
     ProfileViewSet,
+    SendEmailResetPasswordView,
+    ResetPasswordView,
 )
 
 
@@ -18,5 +20,9 @@ urlpatterns = [
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterView.as_view(), name='auth_register'),
     path('activate/', ActivateView.as_view(), name='auth_activate'),
+    path('reset_password/', SendEmailResetPasswordView.as_view(),
+         name='auth_reset_password'),
+    path('confirm_reset/', ResetPasswordView.as_view(),
+         name='auth_confirm_reset'),
     path('', include(router.urls)),
 ]

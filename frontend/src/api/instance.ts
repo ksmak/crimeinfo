@@ -34,7 +34,7 @@ instance.interceptors.response.use((config) => {
             console.log('Error authorization!')
         }
     }
-    return error
+    return Promise.reject(error);
 }))
 
 export default instance

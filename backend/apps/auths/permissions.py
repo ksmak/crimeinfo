@@ -17,7 +17,7 @@ class SelfUser(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        if request.user.is_staff and obj.email == request.user.email:
+        if obj.email == request.user.email:
             return True
 
         return False

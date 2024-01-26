@@ -121,19 +121,17 @@ export type Media = {
 
 export interface IComment {
     id?: number | null,
+    user?: number | null,
     text?: string | null,
-    item_id?: number | null,
-    user_id?: string | null,
-    create_at?: string | null,
-    email?: string | null,
+    item?: number | null,
     about?: boolean
+    create_at?: string | null,
 }
 
 export interface IProfile {
-    id?: number | null,
-    email?: string | null,
-    name?: string | null,
-    avatar_url?: string | null,
+    email: string | null,
+    name: string | null,
+    avatar: string | null,
 }
 
 export interface ICategoryInfo {

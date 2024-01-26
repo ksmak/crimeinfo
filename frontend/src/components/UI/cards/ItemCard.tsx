@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import moment from "moment";
 import { getFileFromUrl, truncate } from "../../../utils/utils";
 import { useEffect, useState } from "react";
-import uuid from "react-uuid";
 
 
 interface ItemCardProps {
@@ -23,18 +22,16 @@ const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
     }, [item])
 
     const getMedias = async (item: IItem) => {
-        // if (item?.photos) {
-        //     let photosFromBase: Media[] = [];
-        //     for (const url of item.photos) {
-        //         const id = uuid();
-        //         const file = await getFileFromUrl(url, id);
-        //         photosFromBase.push({
-        //             id: id,
-        //             file: file,
-        //         })
-        //     }
-        //     setMedias(photosFromBase);
-        // }
+        if (item?.files) {
+            let files: Media[] = [];
+            for (const f of item.files) {
+                const file = await getFileFromUrl(f.file);
+                files.push({
+                    file: file,
+                })
+            }
+            setMedias(files);
+        }
     }
 
     const getPlaceInfo = (): string => {
@@ -122,7 +119,7 @@ const ItemCard = ({ item, regions, districts }: ItemCardProps) => {
                     ? medias.map((item, index) => {
                         const type = item.file.type.replace(/\/.+/, '');
                         return (
-                            <div >
+                            <div key={index}>
                                 {type === 'image'
                                     ? <img
                                         className="w-96 h-64 object-cover object-center"

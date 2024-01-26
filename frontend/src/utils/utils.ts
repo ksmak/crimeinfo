@@ -1,7 +1,6 @@
 import axios from "axios";
 import { Media } from "../types/types";
 import instance from "../api/instance";
-import uuid from "react-uuid";
 
 export const uploadFiles = async (url: string, medias: Media[]) => {
     let formData = new FormData();
@@ -16,7 +15,7 @@ export const uploadFiles = async (url: string, medias: Media[]) => {
 export const getFileFromUrl = async (url: string, defaultType = 'image/jpeg') => {
     const response = await fetch(url);
     const data = await response.blob();
-    const name = uuid();
+    const name = url.substring(url.lastIndexOf('/') + 1);
     return new File([data], name, {
         type: data.type || defaultType,
     });

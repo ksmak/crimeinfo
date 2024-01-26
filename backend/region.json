@@ -1,0 +1,155 @@
+[
+    {
+        "model": "main.region",
+        "pk": 1,
+        "fields": {
+            "title_ru": "Абайская область",
+            "title_kk": "Абай облысы",
+            "title_en": "Abay region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 2,
+        "fields": {
+            "title_ru": "Акмолинская область",
+            "title_kk": "Ақмола облысы",
+            "title_en": "Akmola region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 3,
+        "fields": {
+            "title_ru": "Актюбинская область",
+            "title_kk": "Ақтөбе облысы",
+            "title_en": "Aktobe region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 4,
+        "fields": {
+            "title_ru": "Алматинская область",
+            "title_kk": "Алматы облысы",
+            "title_en": "Almaty region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 5,
+        "fields": {
+            "title_ru": "Атырауская область",
+            "title_kk": "Атырау облысы",
+            "title_en": "Atyrau region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 6,
+        "fields": {
+            "title_ru": "Восточно-Казахстанская область",
+            "title_kk": "Шығыс-Қазақстан облысы",
+            "title_en": "East Kazakhstan region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 7,
+        "fields": {
+            "title_ru": "Жамбылская область",
+            "title_kk": "Жамбыл облысы",
+            "title_en": "Zhambyl region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 8,
+        "fields": {
+            "title_ru": "Жетысуская область",
+            "title_kk": "Жетісу облысы",
+            "title_en": "Zhetysu region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 9,
+        "fields": {
+            "title_ru": "Западно-Казахстанская область",
+            "title_kk": "Батыс-Қазақстан облысы",
+            "title_en": "West Kazakhstan region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 10,
+        "fields": {
+            "title_ru": "Карагандинская область",
+            "title_kk": "Қарағанды облысы",
+            "title_en": "Karaganda region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 11,
+        "fields": {
+            "title_ru": "Костанайская область",
+            "title_kk": "Қостанай облысы",
+            "title_en": "Kostanay region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 12,
+        "fields": {
+            "title_ru": "Кызылординская область",
+            "title_kk": "Қызылорда облысы",
+            "title_en": "Kyzylorda region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 13,
+        "fields": {
+            "title_ru": "Мангистауская область",
+            "title_kk": "Манғыстау облысы",
+            "title_en": "Mangystau region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 14,
+        "fields": {
+            "title_ru": "Павлодарская область",
+            "title_kk": "Паволдар облысы",
+            "title_en": "Pavlodar region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 15,
+        "fields": {
+            "title_ru": "Северо-Казахстанская область",
+            "title_kk": "Солтүстік-Қазақстан облысы",
+            "title_en": "North Kazakhstan region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 16,
+        "fields": {
+            "title_ru": "Туркестанская область",
+            "title_kk": "Түркістан облысы",
+            "title_en": "Turkestan region"
+        }
+    },
+    {
+        "model": "main.region",
+        "pk": 17,
+        "fields": {
+            "title_ru": "Улытауская область",
+            "title_kk": "Ұлытау облысы",
+            "title_en": "Ulytau region"
+        }
+    }
+]

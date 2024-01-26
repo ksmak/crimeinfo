@@ -56,6 +56,20 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
     Profile serializer.
     """
+    email = serializers.EmailField(read_only=True)
+    avatar = serializers.ImageField(required=False)
+
     class Meta:
         model = User
-        fields = ("name", "avatar")
+        fields = ("email", "name", "avatar")
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer for change password
+    """
+    new_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password]
+    )

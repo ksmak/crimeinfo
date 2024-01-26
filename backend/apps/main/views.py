@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.db.models import Count
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -130,18 +131,18 @@ class ItemViewSet(ModelViewSet):
         return queryset
 
     @action(detail=False)
-    def group_by_category(self, request):
+    def group_by_category(self):
         result = Item.objects.values(
             'category').annotate(cnt=Count('category'))
         return Response(result)
 
     @action(detail=True, methods=('post', ))
     @parser_classes((MultiPartParser, FormParser))
-    def upload_files(self, request, pk=None):
+    def upload_files(self, pk=None):
         item = None
         try:
             item = Item.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             print('Error item not found.')
 
         if item is None:
@@ -179,11 +180,11 @@ class InfoViewSet(ModelViewSet):
 
     @action(detail=True, methods=('post', ))
     @parser_classes((MultiPartParser, FormParser))
-    def upload_files(self, request, pk=None):
+    def upload_files(self, pk=None):
         info = None
         try:
             info = Info.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             print('Error info not found.')
 
         if info is None:
@@ -248,10 +249,16 @@ class CommentViewSet(ModelViewSet):
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated, )
+
+
+class ItemCommentsView(ListAPIView):
+    """
+    Item comments view
+    """
     permission_classes = (AllowAny, )
 
-    @action(detail=False)
-    def for_item(self, request):
-        item_id = self.request.query_params.get('item_id')
+    def list(self, request, item_id):
         result = Comment.objects.filter(item=item_id)
-        return Response(result)
+        serializer = CommentSerializer(result, many=True)
+        return Response(serializer.data)

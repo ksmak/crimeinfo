@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 
 
 class Category(models.Model):
@@ -25,7 +24,7 @@ class Category(models.Model):
     )
     photo = models.ImageField(
         verbose_name='фото',
-        upload_to='images/',
+        upload_to='categories/',
         blank=True,
         null=True
     )
@@ -243,7 +242,7 @@ class ItemFile(models.Model):
     )
     file = models.FileField(
         verbose_name='файл',
-        upload_to='files/items/'
+        upload_to='items/'
     )
 
     def __str__(self):
@@ -354,7 +353,7 @@ class InfoFile(models.Model):
     )
     file = models.FileField(
         verbose_name='файл',
-        upload_to='files/info/'
+        upload_to='info/'
     )
 
     def __str__(self):
@@ -528,11 +527,15 @@ class Comment(models.Model):
     user = models.ForeignKey(
         verbose_name='пользователь',
         to=get_user_model(),
-        on_delete=models.RESTRICT
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True
     )
     text = models.CharField(
         verbose_name='текст сообщения',
-        max_length=2000
+        max_length=2000,
+        null=True,
+        blank=True
     )
     item = models.ForeignKey(
         verbose_name='объявление',
@@ -544,6 +547,10 @@ class Comment(models.Model):
     about = models.BooleanField(
         verbose_name='обратная связь',
         default=False
+    )
+    create_at = models.DateTimeField(
+        verbose_name='создан',
+        auto_now_add=True
     )
 
     def __str__(self):

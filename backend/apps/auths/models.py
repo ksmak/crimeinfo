@@ -70,6 +70,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     )
     avatar = models.ImageField(
         verbose_name='аватар',
+        upload_to='avatars/',
         blank=True,
         null=True
     )

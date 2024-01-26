@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import InputField from "../elements/InputField";
 import DetailsTable from "../elements/DetailsTable";
 import MediasTable from "../elements/MediaTable";
-import uuid from 'react-uuid';
 import { useNavigate } from "react-router";
 import Loading from "../elements/Loading";
 import { getFileFromUrl, googleTranslate, uploadFiles } from "../../../utils/utils";
@@ -97,8 +96,7 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         if (item?.files) {
             let files: Media[] = [];
             for (const f of item.files) {
-                const id = uuid();
-                const file = await getFileFromUrl(f.file, id);
+                const file = await getFileFromUrl(f.file);
                 files.push({
                     file: file,
                 })
