@@ -37,7 +37,7 @@ const CommentCard = ({ comment, handleRemoveComment }: CommentCardProps) => {
             <div className="mr-5 self-center">
                 <Avatar
                     className="p-0.5 border-blue-gray-100 place-self-center"
-                    src={profile?.avatar ? profile.avatar : 'default_avatar.png'}
+                    src={profile?.avatar ? profile.avatar : '/default_avatar.png'}
                     alt="avatar"
                     size="md"
                 />

@@ -20,7 +20,7 @@ const CategoriesPage = () => {
                 setCategoryInfo(res.data);
             })
             .catch(err => {
-                console.log(err);
+                //console.log(err);
             })
     }
 

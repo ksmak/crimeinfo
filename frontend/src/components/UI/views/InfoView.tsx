@@ -2,14 +2,13 @@ import { Button, Card, CardBody, CardHeader, Carousel, IconButton, Typography } 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { IApiError, IInfo, Media, UserRole } from "../../../types/types";
+import { IInfo, Media, UserRole } from "../../../types/types";
 import moment from "moment";
 import { ContentState, EditorState } from "draft-js";
 import htmlToDraft from "html-to-draftjs";
 import { Editor } from "react-draft-wysiwyg";
 import Loading from "../elements/Loading";
 import { getFileFromUrl } from "../../../utils/utils";
-import uuid from "react-uuid";
 import { useAuth } from "../../../lib/auth";
 import axios from "axios";
 
@@ -43,7 +42,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
     const getInfo = async () => {
         if (infoId) {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_API_HOST}/info/${infoId}/`)
+                const res = await axios.get(`${process.env.REACT_APP_API_HOST}/api/info/${infoId}/`)
                 setInfo(res.data);
                 if (res.data.files) {
                     let files: Media[] = [];
@@ -54,8 +53,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
                     setMedias(files);
                 }
             } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
+                //console.log(error.message);
             }
         }
     }
@@ -147,7 +145,7 @@ const InfoView = ({ infoId }: InfoViewProps) => {
                                 {medias.map((item, index) => {
                                     const type = item.file.type.replace(/\/.+/, '');
                                     return (
-                                        <div>
+                                        <div key={index}>
                                             {type === 'image'
                                                 ? <img
                                                     key={index}

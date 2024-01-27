@@ -6,6 +6,8 @@ import { useNavigate } from "react-router";
 import { IComment } from "../../../types/types";
 import { useAuth } from "../../../lib/auth";
 import instance from "../../../api/instance";
+import Loading from "../elements/Loading";
+import axios from "axios";
 
 const AboutPage = () => {
     const { t, i18n } = useTranslation();
@@ -13,31 +15,37 @@ const AboutPage = () => {
     const navigate = useNavigate();
     const [comment, setComment] = useState<IComment>({ about: true });
     const [error, setError] = useState('');
-    const [openError, setOpenError] = useState(false);
-    const [openSuccess, setOpenSuccess] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleAddComment = async () => {
+        setLoading(true);
+        setSuccess('');
         setError('');
-        setOpenError(false);
         if (!isAuthenticated) {
             navigate('/login')
         }
         if (!comment.text || comment.text.trim() === '') {
+            setLoading(false);
             setError(t('errorEmptyMessage'));
-            setOpenError(true);
+            setSuccess('');
             return;
         }
-        instance.post(`${process.env.REACT_APP_API_HOST}/comments/`, comment)
-            .then(res => {
-                setComment({ about: true });
-                setOpenSuccess(true);
-                setInterval(() => setOpenSuccess(false), 3000);
-            })
-            .catch(err => {
-                console.log(err);
-                setError(err.message);
-                setOpenError(true);
-            })
+        try {
+            await instance.post(`${process.env.REACT_APP_API_HOST}/api/comments/`, comment)
+            setComment({ about: true });
+            setSuccess(t('successSendMessage'));
+            setError('');
+            setLoading(false);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data.errors);
+            } else {
+                setError(String(error));
+            }
+            setLoading(false);
+            setSuccess('');
+        }
 
     }
 
@@ -110,8 +118,6 @@ const AboutPage = () => {
     return (
         <div>
             <NavigatorPanel />
-            <Alert className="bg-primary-500 mb-4" open={openSuccess} onClose={() => setOpenSuccess(false)}>{t('successSendMessage')}</Alert>
-            <Alert className="bg-red-500 mb-4" open={openError} onClose={() => setOpenError(false)}>{error}</Alert>
             <div className="flex flex-col items-center gap-2 p-5 h-[calc(100vh-7rem)] overflow-y-auto">
                 <div className="flex flex-row justify-between gap-2 w-full flex-wrap lg:flex-nowrap">
                     <div className="w-full flex flex-col">
@@ -213,10 +219,11 @@ const AboutPage = () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
-
+                <Alert className="bg-primary-500 mb-4" open={success !== ''} onClose={() => setSuccess('')}>{success}</Alert>
+                <Alert className="bg-red-500 mb-4" open={error !== ''} onClose={() => setError('')}>{error}</Alert>
             </div>
+            {loading ? <Loading /> : null}
         </div >
     )
 }

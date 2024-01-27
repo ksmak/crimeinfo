@@ -187,7 +187,7 @@ export interface IResultTest {
 }
 
 export interface ITestResults {
-    test_id: number | null,
+    test: number | null,
     data: {
         results: IResultTest[]
     } | null,
@@ -253,9 +253,4 @@ export interface IWeather {
     id?: number,
     name?: string,
     cod?: number,
-}
-
-export interface IApiError {
-    message: string
-    status: number
 }

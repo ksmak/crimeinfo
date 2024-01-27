@@ -16,6 +16,7 @@ import { Bar } from "react-chartjs-2";
 import Loading from "../elements/Loading";
 import { useAuth } from "../../../lib/auth";
 import instance from "../../../api/instance";
+import axios from "axios";
 
 interface TestResultViewProps {
     testId: string | undefined
@@ -65,19 +66,22 @@ const TestResultView = ({ testId }: TestResultViewProps) => {
     }, [questions, testResults]);
 
     const getTest = async (testId: string) => {
-        instance.get(`${process.env.REACT_APP_API_HOST}/tests/${testId}/`)
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/tests/${testId}/`)
             .then(res => {
                 setTest(res.data);
+            })
+            .catch(err => {
+                // console.log(err);
             })
     }
 
     const getResults = async (testId: string) => {
-        instance.get(`${process.env.REACT_APP_API_HOST}/test_results/get_by_test/${testId}/`)
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/test_results/get_by_test?test_id=${testId}`)
             .then(res => {
                 setTestResults(res.data);
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             })
     }
 

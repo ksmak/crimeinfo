@@ -1,5 +1,5 @@
 import { Alert, Badge, Button, Card, CardBody, Carousel, Chip, IconButton, Typography } from "@material-tailwind/react";
-import { IApiError, IComment, IDetail, IItem, Media, UserRole } from "../../../types/types";
+import { IComment, IDetail, IItem, Media, UserRole } from "../../../types/types";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 import 'moment/locale/ru';
@@ -77,8 +77,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
                 setMedias(files);
             }
         } catch (error) {
-            const err = error as IApiError;
-            console.log(err);
+            //console.log(error.message);
         }
     }
 
@@ -87,7 +86,7 @@ const ItemView = ({ itemId }: ItemViewProps) => {
             const res = await axios.get(`${process.env.REACT_APP_API_HOST}/api/item_comments/${itemId}`)
             setComments(res.data);
         } catch (error) {
-
+            //console.log(error.message);
         }
     }
 

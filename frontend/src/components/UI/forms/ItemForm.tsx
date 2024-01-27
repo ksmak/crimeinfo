@@ -1,6 +1,6 @@
 import { Alert, Button } from "@material-tailwind/react";
 import SelectField from "../elements/SelectField";
-import { IDetail, Field, IItem, Media, UserRole, IApiError } from "../../../types/types";
+import { IDetail, Field, IItem, Media, UserRole } from "../../../types/types";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InputField from "../elements/InputField";
@@ -13,6 +13,7 @@ import moment from "moment";
 import { useAuth } from "../../../lib/auth";
 import { useMeta } from "../../../lib/meta";
 import instance from "../../../api/instance";
+import axios from "axios";
 
 interface ItemViewProps {
     itemId: string | undefined
@@ -26,10 +27,9 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
     const [fields, setFields] = useState<Field[]>([]);
     const [detailError, setDetailError] = useState(false);
     const [photoError, setMediaError] = useState(false);
-    const [isSuccesSave, setIsSuccesSave] = useState(false);
-    const [isError, setIsError] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState('');
     const [medias, setMedias] = useState<Media[]>([]);
     const [details, setDetails] = useState<IDetail[]>([]);
     const [item, setItem] = useState<IItem>({
@@ -74,14 +74,20 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
 
     const getItem = async () => {
         if (itemId) {
+            setLoading(true);
             try {
                 const res = await instance.get(`${process.env.REACT_APP_API_HOST}/api/items/${itemId}/`);
                 setItem(res.data);
                 getDetails(res.data);
                 getMedias(res.data);
+                setLoading(false);
             } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.errors);
+                } else {
+                    setError(String(error));
+                }
+                setLoading(false);
             }
         }
     }
@@ -115,9 +121,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
     const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         let newId = '';
-        setErrors('');
-        setIsError(false);
-        setIsSuccesSave(false);
+        setSuccess('');
+        setError('');
         setLoading(true);
         let payload = { ...item };
         payload.details = [...details];
@@ -165,9 +170,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
         //validate
         if (validateForm(payload)) {
             setLoading(false);
-            setErrors('Не все поля заполнены!');
-            setIsError(true);
-            setIsSuccesSave(false);
+            setError(t('errorFillFields'));
+            setSuccess('');
             return;
         }
         if (payload.id) {
@@ -177,16 +181,16 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                 setItem(res.data);
                 await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/items/${item.id}/upload_files/`, medias);
                 setLoading(false);
-                setIsError(false);
-                setIsSuccesSave(true);
-                setInterval(() => setIsSuccesSave(false), 3000);
+                setError('');
+                setSuccess(t('successSave'));
             } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.errors);
+                } else {
+                    setError(String(error));
+                }
                 setLoading(false);
-                setErrors(err.message);
-                setIsError(true);
-                setIsSuccesSave(false);
+                setSuccess('');
             }
         } else {
             payload.created_user = user?.id ? user.id : null;
@@ -196,17 +200,17 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                 newId = res.data.id;
                 await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/items/${newId}/upload_files/`, medias);
                 setLoading(false);
-                setIsError(false);
-                setIsSuccesSave(true);
-                setInterval(() => setIsSuccesSave(false), 3000);
+                setError('');
+                setSuccess(t('successSave'));
                 navigate(`/items/edit/${newId}`);
             } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.new_password);
+                } else {
+                    setError(String(error));
+                }
                 setLoading(false);
-                setErrors(err.message);
-                setIsError(true);
-                setIsSuccesSave(false);
+                setSuccess('');
             }
         }
     }
@@ -278,8 +282,8 @@ const ItemForm = ({ itemId }: ItemViewProps) => {
                             {t('close')}
                         </Button>
                     </div>
-                    <Alert className="bg-blue-400 mb-4" open={isSuccesSave} onClose={() => setIsSuccesSave(false)}>{t('successSave')}</Alert>
-                    <Alert className="bg-red-500 mb-4" open={isError} onClose={() => setIsError(false)}>{errors}</Alert>
+                    <Alert className="bg-blue-400 mb-4" open={success !== ''} onClose={() => setSuccess('')}>{success}</Alert>
+                    <Alert className="bg-red-500 mb-4" open={error !== ''} onClose={() => setError('')}>{error}</Alert>
                     <div className="mb-4 w-fit">
                         <label
                             htmlFor="is_active"

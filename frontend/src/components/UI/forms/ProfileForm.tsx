@@ -1,11 +1,12 @@
 import { Alert, Button } from "@material-tailwind/react";
-import { Media, IApiError, IProfile } from "../../../types/types";
+import { Media, IProfile } from "../../../types/types";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Loading from "../elements/Loading";
 import instance from "../../../api/instance";
 import { getFileFromUrl } from "../../../utils/utils";
+import axios from "axios";
 interface ProfileFormProps {
     userId: number
 }
@@ -37,9 +38,13 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
             }
             setLoading(false);
         } catch (error) {
-            const err = error as IApiError;
-            setError(err.message);
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data.errors);
+            } else {
+                setError(String(error));
+            }
             setLoading(false);
+            setSuccess('');
         }
     }
 
@@ -65,9 +70,12 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
             setError('');
             setSuccess(t('successSave'));
         } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data.errors);
+            } else {
+                setError(String(error));
+            }
             setLoading(false);
-            const err = error as IApiError;
-            setError(err.message);
             setSuccess('');
         }
     }

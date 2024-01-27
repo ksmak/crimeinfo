@@ -2,7 +2,7 @@ import { Alert, Button } from "@material-tailwind/react"
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { IApiError, IInfo, Media, UserRole } from "../../../types/types";
+import { IInfo, Media, UserRole } from "../../../types/types";
 import Loading from "../elements/Loading";
 import InputField from "../elements/InputField";
 import moment from "moment";
@@ -11,10 +11,10 @@ import { ContentState, EditorState, convertToRaw } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs'
 import MediaTable from "../elements/MediaTable";
-import uuid from "react-uuid";
 import { getFileFromUrl, uploadFiles } from "../../../utils/utils";
 import { useAuth } from "../../../lib/auth";
 import instance from "../../../api/instance";
+import axios from "axios";
 
 
 interface InfoFormProps {
@@ -25,9 +25,8 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
     const { roles } = useAuth();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [openSucces, setOpenSuccess] = useState(false);
-    const [openError, setOpenError] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
     const [info, setInfo] = useState<IInfo>({
         id: null,
         is_active: false,
@@ -104,18 +103,18 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
             }
             setLoading(false);
         } catch (error) {
-            const err = error as IApiError;
-            console.log(err);
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data.errors);
+            } else {
+                setError(String(error));
+            }
             setLoading(false);
-            setErrorMessage(err.message);
-            setOpenError(true);
         }
     }
     const handleSave = async () => {
         let newId = '';
-        setErrorMessage('');
-        setOpenError(false);
-        setOpenSuccess(false);
+        setError('');
+        setSuccess('');
         setLoading(true);
         if (info.id) {
             try {
@@ -123,16 +122,16 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
                 setInfo(res.data);
                 await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/info/${info.id}/upload_files/`, medias);
                 setLoading(false);
-                setOpenError(false);
-                setOpenSuccess(true);
-                setInterval(() => setOpenSuccess(false), 3000);
+                setError('');
+                setSuccess(t('successSave'));
             } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.new_password);
+                } else {
+                    setError(String(error));
+                }
                 setLoading(false);
-                setErrorMessage(err.message);
-                setOpenError(true);
-                setOpenSuccess(false);
+                setSuccess('');
             }
         } else {
             try {
@@ -140,18 +139,18 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
                 setInfo(res.data);
                 await uploadFiles(`${process.env.REACT_APP_API_HOST}/api/info/${res.data.id}/upload_files/`, medias);
                 setLoading(false);
-                setOpenError(false);
-                setOpenSuccess(true);
-                setInterval(() => setOpenSuccess(false), 3000);
+                setError('');
+                setSuccess(t('successSave'));
                 newId = res.data.id;
                 navigate(`/info/edit/${newId}`);
             } catch (error) {
-                const err = error as IApiError;
-                console.log(err);
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.new_password);
+                } else {
+                    setError(String(error));
+                }
                 setLoading(false);
-                setErrorMessage(err.message);
-                setOpenError(true);
-                setOpenSuccess(false);
+                setSuccess('');
             }
         }
     }
@@ -164,7 +163,6 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
             const files = (e.target as HTMLInputElement).files;
             if (e.target && files) {
                 const file = files[0];
-                const file_id = uuid()
                 setMedias([...medias, { file: file }]);
             }
         };
@@ -201,8 +199,8 @@ const InfoForm = ({ infoId }: InfoFormProps) => {
                             {t('close')}
                         </Button>
                     </div>
-                    <Alert className="bg-teal-500 mb-4" open={openSucces} onClose={() => setOpenSuccess(false)}>{t('successSave')}</Alert>
-                    <Alert className="bg-red-500 mb-4" open={openError} onClose={() => setOpenError(false)}>{errorMessage}</Alert>
+                    <Alert className="bg-teal-500 mb-4" open={success !== ''} onClose={() => setSuccess('')}>{success}</Alert>
+                    <Alert className="bg-red-500 mb-4" open={error !== ''} onClose={() => setError('')}>{error}</Alert>
                     <div className="mb-4 w-fit">
                         <label
                             htmlFor="is_active"

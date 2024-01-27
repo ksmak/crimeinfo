@@ -1,7 +1,6 @@
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { IApiError } from "../../../types/types";
 import LanguagePanel from "../panels/LanguagePanel";
 import { Spinner, Typography } from "@material-tailwind/react";
 import { Link } from "react-router-dom";
@@ -30,11 +29,15 @@ const ActivatePage = () => {
                 if (res.status === 200) {
                     setSuccess(t('successActivate'))
                 }
-            } catch (error) {
-                const err = error as IApiError;
-                setError(err.message);
-            } finally {
                 setLoading(false);
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data.errors);
+                } else {
+                    setError(String(error));
+                }
+                setLoading(false);
+                setSuccess('');
             }
         }
     }

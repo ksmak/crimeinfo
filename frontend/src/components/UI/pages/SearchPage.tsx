@@ -168,7 +168,7 @@ const SearchPage = () => {
                         value={filter.category ? filter.category : ''}
                         onChange={(e) => handleChangeCategory(e.target.value)}
                         dict={categories}
-                        required={true}
+                        required={false}
                     />
                     <Badge content={count} invisible={count === 0}>
                         <Button size="sm" variant="outlined" className="flex items-center gap-3 text-primary-500 border-primary-500" onClick={() => setOpenFilter(!openFilter)}>
@@ -187,7 +187,7 @@ const SearchPage = () => {
                                     value={filter.region ? filter.region : ''}
                                     dict={regions}
                                     onChange={(e) => setFilter({ ...filter, region: e.target.value })}
-                                    required={true}
+                                    required={false}
                                 />
                             </div>
                             <div className="w-full mb-4">
@@ -197,7 +197,7 @@ const SearchPage = () => {
                                     value={filter.district ? filter.district : ''}
                                     dict={districts}
                                     onChange={(e) => setFilter({ ...filter, district: e.target.value })}
-                                    required={true}
+                                    required={false}
                                 />
                             </div>
                             <div className="w-full mb-4">
@@ -207,7 +207,7 @@ const SearchPage = () => {
                                     label={t('punkt')}
                                     value={filter.punkt ? filter.punkt : ''}
                                     onChange={(e) => setFilter({ ...filter, punkt: e.target.value })}
-                                    required={true}
+                                    required={false}
                                 />
                             </div>
                             <div className="w-44 mb-4 flex flex-row gap-4">
@@ -217,7 +217,7 @@ const SearchPage = () => {
                                     label={t('date_start')}
                                     value={filter.date_of_action_start ? filter.date_of_action_start : ''}
                                     onChange={(e) => setFilter({ ...filter, date_of_action_start: e.target.value })}
-                                    required={true}
+                                    required={false}
                                 />
                                 <InputField
                                     type='date'
@@ -225,7 +225,7 @@ const SearchPage = () => {
                                     label={t('date_end')}
                                     value={filter.date_of_action_end ? filter.date_of_action_end : ''}
                                     onChange={(e) => setFilter({ ...filter, date_of_action_end: e.target.value })}
-                                    required={true}
+                                    required={false}
                                 />
                             </div>
                             {fields

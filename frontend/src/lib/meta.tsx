@@ -41,7 +41,7 @@ export function MetaProvider({ children }: any) {
 
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             })
     };
 
@@ -51,7 +51,7 @@ export function MetaProvider({ children }: any) {
                 setRegions(res.data);
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             })
     };
 
@@ -61,38 +61,45 @@ export function MetaProvider({ children }: any) {
                 setDistricts(res.data);
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             })
     }
 
     const getInfoItems = () => {
         axios.get<IInfo[]>(`${process.env.REACT_APP_API_HOST}/api/info/`)
             .then(res => {
-                setInfoItems(res.data);
+                let arr = res.data.map(item => {
+                    item.type = 'info';
+                    return item
+                })
+                setInfoItems(arr);
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             })
     }
 
     const getTestItems = () => {
         axios.get<ITest[]>(`${process.env.REACT_APP_API_HOST}/api/tests/`)
             .then(res => {
-                setTestItems(res.data);
+                let arr = res.data.map(item => {
+                    item.type = 'test_type';
+                    return item
+                })
+                setTestItems(arr);
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             })
     }
 
     const getWeather = (lat: string, lon: string) => {
-        const weatherURL =
-            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&lang=ru&units=metric&APPID=a9a3a62789de80865407c0452e9d1c27`
-
-        fetch(weatherURL)
-            .then(res => res.json())
-            .then(data => {
-                setWeather(data);
+        axios.get<IWeather>(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&lang=ru&units=metric&APPID=a9a3a62789de80865407c0452e9d1c27`)
+            .then(res => {
+                setWeather(res.data);
+            })
+            .catch(err => {
+                // console.log(err);
             })
     }
 

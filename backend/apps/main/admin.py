@@ -9,7 +9,9 @@ from .models import (
     Info,
     InfoFile,
     Test,
-    UserRole
+    UserRole,
+    Comment,
+    TestResult,
 )
 
 
@@ -46,3 +48,5 @@ admin.site.register(Info, InfoAdmin)
 admin.site.register(InfoFile)
 admin.site.register(Test, TestAdmin)
 admin.site.register(UserRole)
+admin.site.register(Comment)
+admin.site.register(TestResult)

@@ -147,5 +147,6 @@
     "reward": "Show the label: A reward guaranteed!",
     "warning_text": "Warning: Information obtained from this service is presented solely for the purpose of assisting law enforcement agencies in finding stolen or wanted items. Information found about any thing (item) or its absence is not a legal justification for its purchase (acquisition) or sale (sale).",
     "copied": "copied!",
-    "successActivate": "Your account has been successfully activated!"
+    "successActivate": "Your account has been successfully activated!",
+    "errorFillFields": "Not all fields are filled in!"
 }

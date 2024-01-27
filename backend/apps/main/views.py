@@ -131,14 +131,14 @@ class ItemViewSet(ModelViewSet):
         return queryset
 
     @action(detail=False)
-    def group_by_category(self):
+    def group_by_category(self, request):
         result = Item.objects.values(
             'category').annotate(cnt=Count('category'))
         return Response(result)
 
     @action(detail=True, methods=('post', ))
     @parser_classes((MultiPartParser, FormParser))
-    def upload_files(self, pk=None):
+    def upload_files(self, request, pk=None):
         item = None
         try:
             item = Item.objects.get(pk=pk)
@@ -180,7 +180,7 @@ class InfoViewSet(ModelViewSet):
 
     @action(detail=True, methods=('post', ))
     @parser_classes((MultiPartParser, FormParser))
-    def upload_files(self, pk=None):
+    def upload_files(self, request, pk=None):
         info = None
         try:
             info = Info.objects.get(pk=pk)
@@ -228,7 +228,19 @@ class TestResultViewSet(ModelViewSet):
     """
     queryset = TestResult.objects.all()
     serializer_class = TestResultSerializer
-    permission_classes = (SelfUser, )
+    permission_classes = (AllowAny, )
+
+    @action(detail=False, methods=['GET'])
+    def get_by_test(self, request):
+        test_id = request.GET.get('test_id')
+        if not test_id:
+            return Response({
+                'errors': 'test_id not found'
+            }, status=HTTP_404_NOT_FOUND)
+
+        result = TestResult.objects.filter(test=test_id)
+        serializer = TestResultSerializer(result, many=True)
+        return Response(serializer.data)
 
 
 class UserRoleView(ListAPIView):

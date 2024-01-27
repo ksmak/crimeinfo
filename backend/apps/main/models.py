@@ -425,7 +425,7 @@ class Test(models.Model):
     )
 
     def __str__(self):
-        return f"{self.order} - {self.title}"
+        return f"{self.order} - {self.title_ru}"
 
     class Meta:
         verbose_name = 'опрос'
@@ -446,29 +446,9 @@ class TestResult(models.Model):
         blank=True,
         null=True
     )
-    create_user = models.ForeignKey(
-        verbose_name='кем создан',
-        to=get_user_model(),
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name='test_result_create_users'
-    )
-    change_user = models.ForeignKey(
-        verbose_name='кем изменен',
-        to=get_user_model(),
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name='test_result_change_users'
-    )
     date_of_creation = models.DateTimeField(
         verbose_name='дата создания',
         auto_now_add=True
-    )
-    date_of_change = models.DateTimeField(
-        verbose_name='дата изменения',
-        auto_now=True
     )
 
     def __str__(self):

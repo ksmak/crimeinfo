@@ -47,7 +47,7 @@ const TestView = ({ testId }: TestViewProps) => {
     }, [test, i18n.language])
 
     const getTest = async (testId: string) => {
-        axios.get(`${process.env.REACT_APP_API_HOST}/tests/${testId}/`)
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/tests/${testId}/`)
             .then(res => {
                 setTest(res.data);
                 const questions: { answers: boolean[] }[] = res.data.data && res.data.data[`test_${i18n.language}` as keyof typeof res.data.data];
@@ -75,8 +75,8 @@ const TestView = ({ testId }: TestViewProps) => {
                 return;
             }
         }
-        axios.post(`${process.env.REACT_APP_API_HOST}/test_results/`, {
-            test_id: test.id,
+        axios.post(`${process.env.REACT_APP_API_HOST}/api/test_results/`, {
+            test: test.id,
             data: { results: results }
         })
             .then(res => {

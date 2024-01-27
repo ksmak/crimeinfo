@@ -22,6 +22,11 @@ const LoginPage = () => {
         setErrorRegisterEmail('');
         setErrorRegisterPassword('');
         setLoading(true);
+        if (password !== confirmPassword) {
+            setLoading(false);
+            setErrorRegisterPassword(t('errorPasswordConfirm'));
+            return;
+        }
         axios.post(`${process.env.REACT_APP_API_HOST}/auth/register/`, {
             email: email,
             password: password,
